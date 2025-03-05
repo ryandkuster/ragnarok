@@ -15,6 +15,7 @@
 
 nextflow (22.10.4+)  
 apptainer (1.1.8+)  
+path to helixer model https://zenodo.org/records/10836346
 
 ### getting started
 

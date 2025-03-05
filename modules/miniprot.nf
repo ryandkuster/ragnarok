@@ -17,7 +17,7 @@ process MINIPROT {
     script:
         """
         miniprot -t${task.cpus} -d ${gff3.baseName}.mpi $genome
-        miniprot -Iut${task.cpus} --gff ${gff3.baseName}.mpi $protein > ${gff3.baseName}_aa_miniprot.gff
+        miniprot -Iut${task.cpus} --gff ${gff3.baseName}.mpi $protein > aa_miniprot.gff
         """
 }
 

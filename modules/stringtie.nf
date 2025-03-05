@@ -17,7 +17,7 @@ process STRINGTIE {
         stringtie \
             -p ${task.cpus} \
             $bam \
-            -o ${sample}_10kIntron_stringtie.gtf
+            -o 10kIntron_stringtie.gtf
         """
 }
 

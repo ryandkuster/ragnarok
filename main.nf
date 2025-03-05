@@ -79,7 +79,8 @@ workflow {
     }
  
     SAM_SORT(STAR_MAP.out.bam_ch)
- 
+
+    // TODO: consider allowing bam as input to bypass star mapping
     STRINGTIE(SAM_SORT.out.sort_ch)
  
     GFFREAD(STRINGTIE.out.gtf_ch,
