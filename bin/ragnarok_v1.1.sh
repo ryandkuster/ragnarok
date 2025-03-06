@@ -117,13 +117,9 @@ conda deactivate
 #Generate a EST based longest ORF annotation using the StringTie2 transcripts
 # this might be in util, but try anyway
 apptainer exec -e /project/pomics/programs/transdecoder.v5.7.1.simg gtf_genome_to_cdna_fasta.pl stringtie_LR.gtf "${masked_fasta}" > transcripts.fasta
-#gtf_to_alignment_gff3.pl transcripts.gtf > transcripts.gff3
 apptainer exec -e /project/pomics/programs/transdecoder.v5.7.1.simg TransDecoder.LongOrfs -t transcripts.fasta
-
 apptainer exec -e /project/pomics/programs/transdecoder.v5.7.1.simg TransDecoder.Predict -t transcripts.fasta
-
 apptainer exec -e /project/pomics/programs/transdecoder.v5.7.1.simg gtf_to_alignment_gff3.pl stringtie_LR.gtf > transcripts.gff3
-
 apptainer exec -e /project/pomics/programs/transdecoder.v5.7.1.simg cdna_alignment_orf_to_genome_orf.pl \
      transcripts.fasta.transdecoder.gff3 \
      transcripts.gff3 \

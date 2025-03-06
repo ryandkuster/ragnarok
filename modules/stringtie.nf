@@ -10,7 +10,7 @@ process STRINGTIE {
         tuple val(sample), path(bam)
 
     output:
-        tuple val(sample), path("*.gtf"), emit: gtf_ch
+        path("*.gtf"), emit: st_ch
 
     script:
         """

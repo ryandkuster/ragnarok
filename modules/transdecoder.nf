@@ -7,11 +7,11 @@ process TRANSDECODER {
     memory 4.GB
 
     input:
-        tuple val(sample), path(gtf)
+        path(gtf)
         path genome
 
     output:
-        tuple val(sample), path("*.genome.gff3"), emit: est_ch
+        path("*.genome.gff3"), emit: tr_ch
 
     script:
         """

@@ -5,13 +5,14 @@ Given an input tsv of input gff files or anticipated gff files, parse
 the input:
 	- [x] confirm helixer, stringtie, transdecoder, miniprot inputs are
 	  labelled correctly with hx, st, tr, and mp
-	- [ ] if input gff provided for the above expected fields, check
+	- [x] if input gff provided for the above expected fields, check
 	  that the path(s) exists locally
-	- [ ] if no input gffs in hx, str, tr, and mp, fill these fields
+	- [x] if no input gffs in hx, str, tr, and mp, fill these fields
 		  with the generic names the pipeline will produce
-	- [ ] additional gff files exist on the system
-	- [ ] names are all unique
-	- [ ] modifiers are empty or numeric
+	- [x] additional gff files exist on the system
+	- [x] names are all unique
+	- [x] if st or hx is skipped on run, make sure the gffs are present.
+	- [x] modifiers are empty or numeric
 
 
 Mikado configuration file
@@ -34,6 +35,7 @@ aa_miniprot.gff	mp	True	1	False	False
 """
 
 import os
+import numpy as np
 import pandas as pd
 import sys
 
@@ -43,18 +45,19 @@ def get_input():
 	Load the tsv input and apply column labels based on input length.
 	"""
 	colnames = ["file",
-			    "id",
-			    "strand",
-			    "modifier",
-			    "reference",
+				"id",
+				"strand",
+				"modifier",
+				"reference",
 				"exclude_redundant",
 				"strip_cds",
 				"skip_chimera"]
 
 	df = pd.read_csv(sys.argv[1], sep="\t", header=None)
-	df.columns = colnames[:df.shape[1]]
+	colnames = colnames[:df.shape[1]]
+	df.columns = colnames
 
-	return df
+	return df, colnames
 
 
 def expected_ids(df):
@@ -73,6 +76,23 @@ def unique_ids(df):
 	id_ls = df["id"].to_list()
 	uniq_id_ls = df["id"].unique().tolist()
 	assert len(id_ls) == len(uniq_id_ls), f"{id_ls} duplicates found"
+
+
+def fields_okay(df, colnames):
+	"""
+	Confirm that input fields are bool or numeric as needed.
+	If NaN present, replace with empty 0 for assert, then empty string.
+	"""
+	df["modifier"] = df["modifier"].replace(np.NaN, "0")
+
+	for i in colnames[2:]:
+		if i == "modifier":
+			assert pd.to_numeric(df["modifier"], errors='coerce').notna().all(), f"modifier must be numeric"
+		else:
+			assert df[i].isin([True, False]).all(), f"strand must be bool for {i}"
+	df["modifier"] = df["modifier"].replace("0", "")
+
+	return df
 
 
 def expected_gffs(df):
@@ -103,28 +123,40 @@ def expected_gffs(df):
 	return len(st_ls) == 0, len(hx_ls) == 0
 
 
+def confirm_st_hx_status(st_present, hx_present):
+	skip_st = True if sys.argv[2] == "true" else False
+	skip_hx = True if sys.argv[3] == "true" else False
+	assert st_present == skip_st, f"skip_st is {skip_st} but gff presence is {st_present}"
+	assert hx_present == skip_hx, f"skip_hx is {skip_hx} but gff presence is {hx_present}"
+
+
 def adjust_names(df, st_present, hx_present):
-	gff_ls = df["id"].unique().tolist()
+	"""
+	Once filepaths have been confirmed to exist or not, a table of all
+	files as they will appear once symlinked to mikado2 process is
+	created as the configuration file.
+	"""
 	if not st_present:
-		df.loc[df["id"] == "st", "file"] = "10kIntron_stringtie.gtf"
+		df.loc[df["id"] == "st", "file"] = "10kIntron_stringtie.gff"
 		df.loc[df["id"] == "tr", "file"] = "transcripts.fasta.transdecoder.genome.gff3"
 		df.loc[df["id"] == "mp", "file"] = "aa_miniprot.gff"
 	if not hx_present:
 		df.loc[df["id"] == "hx", "file"] = "helixer.gff3"
-	df = df["file"].apply(os.path.basename)
+
+	df["file"] = df["file"].apply(os.path.basename)
 
 	return df
 
 
 def main():
-	df = get_input()
+	df, colnames = get_input()
 	expected_ids(df)
 	unique_ids(df)
+	df = fields_okay(df, colnames)
 	st_present, hx_present = expected_gffs(df)
-	print(st_present)
-	print(hx_present)
+	confirm_st_hx_status(st_present, hx_present)
 	df = adjust_names(df, st_present, hx_present)
-	print(df)
+	df.to_csv("mikado.txt", sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":

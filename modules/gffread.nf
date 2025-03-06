@@ -7,12 +7,12 @@ process GFFREAD {
     memory 4.GB
 
     input:
-        tuple val(sample), path(gtf)
+        path(gtf)
         path genome
 
     output:
-        tuple val(sample), path("*.gff"), emit: gff_ch
-        tuple val(sample), path("*.spliced.fa"), emit: exons_ch
+        path("*.gff"), emit: st_gff_ch
+        path("*.spliced.fa"), emit: exons_ch
 
     script:
         """

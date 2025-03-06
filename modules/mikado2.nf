@@ -1,4 +1,4 @@
-process MIKADO2 {
+process THE_GRANDMASTER {
     label 'mikado2'
     label 'campus'
 
@@ -7,19 +7,22 @@ process MIKADO2 {
     memory 4.GB
 
     input:
-        tuple val(sample), path(gff)
-        path genome
-        path protein
-
-    output:
-        tuple val(sample), path("*_aa_miniprot.gff"), emit: mk_ch
+        path(all_gffs)
+        path(design_ch)
+        path(genome)
+        path(scoring)
+        path(homology)
 
     script:
         """
-        echo "M_ioensis_hap1_helixer_rd1.gff3   hx  True        False   False"
-        echo "stringtie_LR.gtf  st  True    1   False   True"
-        echo "transcripts.fasta.transdecoder.genome.gff3    tr  False   -0.5    False   False"
-        echo "fusca_aa_miniprot.gff mp  True    1   False   False"
+        mikado configure \
+            --list mikado.tsv \
+            --reference $genome \
+            --mode permissive \
+            --scoring $scoring \
+            -bt $homology \
+            configuration.yaml
+        mikado prepare --json-conf configuration.yaml
         """
 }
 

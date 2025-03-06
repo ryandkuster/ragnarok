@@ -7,12 +7,12 @@ process MINIPROT {
     memory 4.GB
 
     input:
-        tuple val(sample), path(gff3)
+        path(gff3)
         path genome
         path protein
 
     output:
-        tuple val(sample), path("*_aa_miniprot.gff"), emit: mp_ch
+        path("aa_miniprot.gff"), emit: mp_ch
 
     script:
         """

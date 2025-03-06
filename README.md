@@ -99,6 +99,12 @@ To check the limits for a given qos, replace short with any qos:
 sacctmgr show qos where name=short
 ```
 
+...or
+
+```
+scontrol show partition short
+```
+
 ## development planning:
 
 ### desired input considerations
@@ -118,3 +124,4 @@ sacctmgr show qos where name=short
 - [x] trimming
 - [ ] FindPlantNLRs annotation
 - [ ] EDTA masking
+- [ ] allow non land_plant model for Helixer (opened issue)

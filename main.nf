@@ -22,13 +22,15 @@ include { GFFREAD                 } from "./modules/gffread.nf"
 include { TRANSDECODER            } from "./modules/transdecoder.nf"
 include { MINIPROT                } from "./modules/miniprot.nf"
 include { HELIXER                 } from "./modules/helixer.nf"
-include { MIKADO2                 } from "./modules/mikado2.nf"
+include { HELIXER_DB              } from "./modules/helixer.nf"
+include { PARSE_INPUT             } from './modules/parse_input.nf'
+include { THE_GRANDMASTER         } from "./modules/mikado2.nf"
 
 workflow {
 
     /*
     --------------------------------------------------------------------
-        parse inputs and prepare indices and interval files
+        get fastq inputs
     --------------------------------------------------------------------
     */
 
@@ -71,34 +73,57 @@ workflow {
     }
 
     if (params.read_type == "ill") {
- 
-    STAR_INDEX_NA(params.genome)
- 
-    STAR_MAP(fastq_ch,
-             STAR_INDEX_NA.out.star_idx)
+        STAR_INDEX_NA(params.genome)
+        STAR_MAP(fastq_ch,
+                 STAR_INDEX_NA.out.star_idx)
+        SAM_SORT(STAR_MAP.out.bam_ch)
     }
  
-    SAM_SORT(STAR_MAP.out.bam_ch)
 
     // TODO: consider allowing bam as input to bypass star mapping
-    STRINGTIE(SAM_SORT.out.sort_ch)
+    if (!params.skip_st) {
+        STRINGTIE(SAM_SORT.out.sort_ch)
  
-    GFFREAD(STRINGTIE.out.gtf_ch,
-            params.genome)
+        GFFREAD(STRINGTIE.out.st_ch,
+                params.genome)
  
-    TRANSDECODER(STRINGTIE.out.gtf_ch,
-            params.genome)
+        TRANSDECODER(STRINGTIE.out.st_ch,
+                     params.genome)
  
-    MINIPROT(TRANSDECODER.out.est_ch,
-            params.genome,
-            params.protein)
+        MINIPROT(TRANSDECODER.out.tr_ch,
+                 params.genome,
+                 params.protein)
 
-    HELIXER(params.genome,
-            params.lineage)
+        HELIXER_DB(params.lineage)
+
+        st_gff = GFFREAD.out.st_gff_ch
+        tr_gff = TRANSDECODER.out.tr_ch
+        mp_gff = MINIPROT.out.mp_ch
+    }
+
+    if (!params.skip_hx) {
+        HELIXER(params.genome,
+                HELIXER_DB.out.db_ch,
+                params.subseq_len)
+
+        hx_gff = HELIXER.out.hx_ch
+    }
+
+    hx_gff.concat(st_gff, tr_gff, mp_gff).set{all_gff_ch}
 
     /*
     --------------------------------------------------------------------
         mikado2
     --------------------------------------------------------------------
     */
+
+    PARSE_INPUT(params.design,
+                params.skip_st,
+                params.skip_hx)
+
+    THE_GRANDMASTER(all_gff_ch.collect(),
+                    PARSE_INPUT.out.design_ch,
+                    params.genome,
+                    params.scoring,
+                    params.homology)
 }
