@@ -28,7 +28,6 @@ nextflow -version
 apptainer --version
 ```
 
-
 ```
 nextflow <path to your pipeline>/ragnarok/main.nf \
     --publish_dir <your desired results directory> \
@@ -117,11 +116,112 @@ scontrol show partition short
 - [x] stringtie
 - [x] gffread
 - [x] miniprot
-- [ ] mikado2
+- [x] mikado2
+- [x] busco
+- [x] handle additional gff input paths
+- [ ] determine steps where copying to publish_dir is needed
 
 ### optional steps  
 - [x] QC
 - [x] trimming
 - [ ] FindPlantNLRs annotation
 - [ ] EDTA masking
-- [ ] allow non land_plant model for Helixer (opened issue)
+- [x] allow non land_plant model for Helixer (opened issue)
+
+### obstacles
+- [ ] mikado2 quay container is broken
+- [ ] edta run fails on citrus genome
+
+```mermaid
+flowchart TB
+    subgraph " "
+    subgraph params
+    v25["lineage"]
+    v15["read_type"]
+    v38["scoring"]
+    v39["homology"]
+    v11["masked"]
+    v2["skip_qc"]
+    v6["minimum_length"]
+    v30["skip_hx"]
+    v12["genome"]
+    v13["cds"]
+    v0["fastq_pe"]
+    v23["protein"]
+    v31["subseq_len"]
+    v34["design"]
+    v5["skip_trim"]
+    v19["skip_st"]
+    end
+    v3([FASTQC_RAW])
+    v4([MULTIQC_RAW])
+    v7([FASTP_ADAPTERS])
+    v9([FASTQC_TRIM])
+    v10([MULTIQC_TRIM])
+    v14([EDTA])
+    v16([STAR_INDEX_NA])
+    v17([STAR_MAP])
+    v18([SAM_SORT])
+    v20([STRINGTIE])
+    v21([GFFREAD])
+    v22([TRANSDECODER])
+    v24([MINIPROT])
+    v26([HELIXER_DB])
+    v32([HELIXER])
+    v35([PARSE_INPUT])
+    v40([MIKADO_CONF])
+    v41([TRANSDECODER_ORF])
+    v42([DIAMOND])
+    v43([THE_GRANDMASTER])
+    v44([GFFREAD_FINAL])
+    v45([BUSCO])
+    v46([COMPLEASM])
+    v0 --> v3
+    v3 --> v4
+    v0 --> v7
+    v6 --> v7
+    v7 --> v9
+    v9 --> v10
+    v12 --> v14
+    v13 --> v14
+    v12 --> v16
+    v16 --> v17
+    v7 --> v17
+    v17 --> v18
+    v18 --> v20
+    v20 --> v21
+    v12 --> v21
+    v20 --> v22
+    v12 --> v22
+    v22 --> v24
+    v23 --> v24
+    v12 --> v24
+    v25 --> v26
+    v26 --> v32
+    v12 --> v32
+    v31 --> v32
+    v34 --> v35
+    v19 --> v35
+    v30 --> v35
+    v32 --> v40
+    v35 --> v40
+    v21 --> v40
+    v38 --> v40
+    v22 --> v40
+    v39 --> v40
+    v24 --> v40
+    v12 --> v40
+    v40 --> v41
+    v39 --> v42
+    v40 --> v42
+    v39 --> v43
+    v40 --> v43
+    v41 --> v43
+    v42 --> v43
+    v12 --> v43
+    v43 --> v44
+    v12 --> v44
+    v44 --> v45
+    v44 --> v46
+    end
+```

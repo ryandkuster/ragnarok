@@ -130,6 +130,17 @@ def confirm_st_hx_status(st_present, hx_present):
 	assert hx_present == skip_hx, f"skip_hx is {skip_hx} but gff presence is {hx_present}"
 
 
+def write_existing(df):
+	existing_files = df["file"].to_list()
+
+	with open("gff_paths.csv", "w") as o:
+		for i in existing_files:
+			if pd.isnull(i):
+				pass
+			else:
+				o.write(f"{i}\n")
+
+
 def adjust_names(df, st_present, hx_present):
 	"""
 	Once filepaths have been confirmed to exist or not, a table of all
@@ -155,8 +166,9 @@ def main():
 	df = fields_okay(df, colnames)
 	st_present, hx_present = expected_gffs(df)
 	confirm_st_hx_status(st_present, hx_present)
+	write_existing(df)
 	df = adjust_names(df, st_present, hx_present)
-	df.to_csv("mikado.txt", sep="\t", index=False, header=False)
+	df.to_csv("mikado.tsv", sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":

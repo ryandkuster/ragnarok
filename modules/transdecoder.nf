@@ -27,3 +27,23 @@ process TRANSDECODER {
         """
 }
 
+process TRANSDECODER_ORF {
+    label 'transdecoder'
+    label 'short'
+
+    time 3.h
+    cpus 4
+    memory 20.GB
+
+    input:
+        tuple path(mk_gtf), path(mk_fasta)
+
+    output:
+        path("mikado_prepared.fasta.transdecoder.gff3"), emit: orf_ch
+
+    script:
+        """
+        TransDecoder.LongOrfs -t $mk_fasta
+        mv mikado_prepared.fasta.transdecoder_dir/longest_orfs.gff3 ./mikado_prepared.fasta.transdecoder.gff3
+        """
+}

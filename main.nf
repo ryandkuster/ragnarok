@@ -24,7 +24,13 @@ include { MINIPROT                } from "./modules/miniprot.nf"
 include { HELIXER                 } from "./modules/helixer.nf"
 include { HELIXER_DB              } from "./modules/helixer.nf"
 include { PARSE_INPUT             } from './modules/parse_input.nf'
-include { THE_GRANDMASTER         } from "./modules/mikado2.nf"
+include { MIKADO_CONF             } from "./modules/mikado2.nf"
+include { DIAMOND                 } from './modules/diamond.nf'
+include { THE_GRANDMASTER         } from './modules/mikado2.nf'
+include { TRANSDECODER_ORF        } from './modules/transdecoder.nf'
+include { GFFREAD_FINAL           } from './modules/gffread.nf'
+include { BUSCO                   } from './modules/busco.nf'
+include { COMPLEASM } from './modules/compleasm.nf'
 
 workflow {
 
@@ -38,7 +44,7 @@ workflow {
 
     /*
     --------------------------------------------------------------------
-        adapter removal and qc summary stats
+        adapter removal and qc summary stats (optional)
     --------------------------------------------------------------------
     */
 
@@ -79,6 +85,7 @@ workflow {
         SAM_SORT(STAR_MAP.out.bam_ch)
     }
  
+    if (params.read_type == "iso") {}
 
     // TODO: consider allowing bam as input to bypass star mapping
     if (!params.skip_st) {
@@ -109,8 +116,6 @@ workflow {
         hx_gff = HELIXER.out.hx_ch
     }
 
-    hx_gff.concat(st_gff, tr_gff, mp_gff).set{all_gff_ch}
-
     /*
     --------------------------------------------------------------------
         mikado2
@@ -121,9 +126,34 @@ workflow {
                 params.skip_st,
                 params.skip_hx)
 
-    THE_GRANDMASTER(all_gff_ch.collect(),
+    PARSE_INPUT.out.path_ch
+        .splitCsv( header: false, sep: ',' )
+        .set { gff_path_ch }
+
+    gff_path_ch.concat(hx_gff, st_gff, tr_gff, mp_gff).set{all_gff_ch}
+    all_gff_ch.view()
+
+    MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
                     params.genome,
                     params.scoring,
                     params.homology)
+
+    TRANSDECODER_ORF(MIKADO_CONF.out.mk_ch)
+
+    DIAMOND(params.homology,
+            MIKADO_CONF.out.mk_ch)
+
+    THE_GRANDMASTER(MIKADO_CONF.out.yaml_ch,
+                    MIKADO_CONF.out.mk_ch,
+                    DIAMOND.out.dmnd_ch,
+                    TRANSDECODER_ORF.out.orf_ch,
+                    params.homology,
+                    params.genome)
+
+    GFFREAD_FINAL(THE_GRANDMASTER.out.gm_ch,
+                  params.genome)
+
+    BUSCO(GFFREAD_FINAL.out.final_ch)
+    COMPLEASM(GFFREAD_FINAL.out.final_ch)
 }

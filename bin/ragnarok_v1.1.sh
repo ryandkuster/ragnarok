@@ -152,7 +152,14 @@ nano list.txt #need to copy and paste the text below for the list file
   fusca_aa_miniprot.gff	mp	True	1	False	False
   """
 
-mikado configure --list list.txt --reference M_ioensis_hap1_all_scaffolds.fasta.mod.MAKER.masked --mode permissive --scoring plants.yaml -bt /home/chris/Documents/databases/uniprot_sprot.fasta configuration.yaml
+mikado configure \
+   --list list.txt \
+   --reference M_ioensis_hap1_all_scaffolds.fasta.mod.MAKER.masked \
+   --mode permissive \
+   --scoring plants.yaml \
+   -bt /home/chris/Documents/databases/uniprot_sprot.fasta \
+   configuration.yaml
+
 mikado prepare --json-conf configuration.yaml
 
 conda deactivate

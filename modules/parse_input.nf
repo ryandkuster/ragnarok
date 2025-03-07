@@ -14,7 +14,8 @@ process PARSE_INPUT {
         val(skip_hx)
 
     output:
-        path 'mikado.txt', emit: design_ch
+        path 'mikado.tsv', emit: design_ch
+        path 'gff_paths.csv', emit: path_ch
 
     script:
         """
