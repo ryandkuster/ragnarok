@@ -6,6 +6,8 @@ process MIKADO_CONF {
     cpus 20
     memory 4.GB
 
+    publishDir(path: "${publish_dir}/mikado_conf", mode: "copy")
+
     input:
         path(all_gffs)
         path(design)
@@ -17,6 +19,7 @@ process MIKADO_CONF {
         path("configuration.yaml"), emit: yaml_ch
         path("*.fai"), emit: fai_ch
         tuple path("mikado_prepared.gtf"), path("mikado_prepared.fasta"), emit: mk_ch
+        path("*.{gtf,gff,gff3}"), emit: all_ch
 
     script:
         """
@@ -38,6 +41,8 @@ process THE_GRANDMASTER {
     time 3.h
     cpus 24
     memory 20.GB
+
+    publishDir(path: "${publish_dir}/mikado_final", mode: "copy")
 
     input:
         path(yaml)

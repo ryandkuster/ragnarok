@@ -112,6 +112,7 @@ scontrol show partition short
 - [x] alignment 
   - [x] alignment - STAR
   - [ ] alignment - long reads
+    - look at options for pacbio (splice) v. nanopore
 - [x] helixer
 - [x] stringtie
 - [x] gffread
@@ -127,10 +128,20 @@ scontrol show partition short
 - [ ] FindPlantNLRs annotation
 - [ ] EDTA masking
 - [x] allow non land_plant model for Helixer (opened issue)
+- [ ] mikado2 plants.yaml max intron length (10k is good)
+    - [ ] assets dir with angiosperms/gymnosperm preset
+    - [ ] have a table of stats (toss citations in there)
+- [ ] allow for stringtie --mixed
+- [ ] allow "ill", "iso", or "mixed"
+- [ ] allow STAR and minimap to take in multiple fastq files
 
 ### obstacles
 - [ ] mikado2 quay container is broken
-- [ ] edta run fails on citrus genome
+- [ ] edta run fails on citrus genome (send error code) (rename scafs)
+    - may need to rename scaffolds after running
+- [ ] find braker3 logs for duplicated genes
+    - full table tsv, busco id numbers, status
+    - breakdown of types (gff files)
 
 ```mermaid
 flowchart TB

@@ -1,8 +1,8 @@
 process EDTA {
     label 'edta'
-    label 'campus'
+    label 'long'
 
-    time 24.h
+    time 48.h
     cpus 24
     memory 40.GB
 

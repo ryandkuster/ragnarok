@@ -30,7 +30,11 @@ include { THE_GRANDMASTER         } from './modules/mikado2.nf'
 include { TRANSDECODER_ORF        } from './modules/transdecoder.nf'
 include { GFFREAD_FINAL           } from './modules/gffread.nf'
 include { BUSCO                   } from './modules/busco.nf'
-include { COMPLEASM } from './modules/compleasm.nf'
+include { COMPLEASM               } from './modules/compleasm.nf'
+include { COMPLEASM_DB            } from './modules/compleasm.nf'
+include { FPNLRS_SETUP            } from './modules/findplantnlrs.nf'
+include { FINDPLANTNLRS } from './modules/findplantnlrs.nf'
+include { ANNOTATENLRS } from './modules/findplantnlrs.nf'
 
 workflow {
 
@@ -65,6 +69,21 @@ workflow {
             FASTQC_TRIM(fastq_ch, "trimmed")
             MULTIQC_TRIM(FASTQC_TRIM.out.fastq_ch.collect(), "trimmed")
         }
+    }
+
+    /*
+    --------------------------------------------------------------------
+        find plant NLRs
+    --------------------------------------------------------------------
+    */
+
+    if (params.nlrs == true) {
+        FPNLRS_SETUP(params.genome)
+        FINDPLANTNLRS(FPNLRS_SETUP.out.fplnr_db_ch,
+                      params.ipscan)
+        ANNOTATENLRS(FINDPLANTNLRS.out.fplnr_ch,
+                      params.ipscan,
+                      params.genemark)
     }
 
     /*
@@ -131,7 +150,6 @@ workflow {
         .set { gff_path_ch }
 
     gff_path_ch.concat(hx_gff, st_gff, tr_gff, mp_gff).set{all_gff_ch}
-    all_gff_ch.view()
 
     MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
@@ -155,5 +173,7 @@ workflow {
                   params.genome)
 
     BUSCO(GFFREAD_FINAL.out.final_ch)
-    COMPLEASM(GFFREAD_FINAL.out.final_ch)
+    COMPLEASM_DB()
+    COMPLEASM(GFFREAD_FINAL.out.final_ch,
+              COMPLEASM_DB.out.db_ch)
 }
