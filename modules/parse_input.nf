@@ -12,6 +12,7 @@ process PARSE_INPUT {
         path(design)
         val(skip_st)
         val(skip_hx)
+        val(nlrs)
 
     output:
         path 'mikado.tsv', emit: design_ch
@@ -22,6 +23,7 @@ process PARSE_INPUT {
         parse_input.py \
             $design \
             $skip_st \
-            $skip_hx
+            $skip_hx \
+            $nlrs
         """
 }

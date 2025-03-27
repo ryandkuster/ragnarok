@@ -1,5 +1,4 @@
 helixer.gff3	hx	True		False	False
-10kIntron_stringtie.gtf	st	True	1.0	False	True
+10kIntron_stringtie.gff	st	True	1.0	False	True
 transcripts.fasta.transdecoder.genome.gff3	tr	False	-0.5	False	False
 aa_miniprot.gff	mp	True	1.0	False	False
-custom.gff3	cs	True	1.0	False	False

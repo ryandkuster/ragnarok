@@ -20,7 +20,7 @@ process FPNLRS_SETUP {
         mkdir -p FindPlantNLRs/tmp
 
         mv journal.pbio.3001124.s013 FindPlantNLRs/ref_db/ref.fasta
-        cp $genome FindPlantNLRs/genome/test.fa
+        cp $genome FindPlantNLRs/genome/fpnlr.fa
         """
 }
 
@@ -70,7 +70,8 @@ process ANNOTATENLRS {
         path(genemark)
 
     output:
-        path("FindPlantNLRs"), emit: fplnr_ch
+        path("FindPlantNLRs"), emit: fpnlr_ch
+        path("FindPlantNLRs/result/fpnlr_braker_aa_NLR.gff3"), emit: nlr_gff_ch
 
     script:
         """

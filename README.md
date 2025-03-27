@@ -13,9 +13,23 @@
 
 ### requirements
 
+#### software
 nextflow (22.10.4+)  
-apptainer (1.1.8+)  
-path to helixer model https://zenodo.org/records/10836346
+apptainer (1.1.8+)
+
+#### required files
+**genome**  
+**short/long reads**  
+**helixer** : helixer model https://zenodo.org/records/10836346  
+**mikado2** : mikado homology (e.g., uniprot 33090 for viridiplantae)  
+**mikado2** : mikado scoring (e.g., plant.yaml)  
+**miniprot** : protein file (e.g., closest ref species)  
+
+#### optional files
+
+**edta** : cds file for your species  
+**findplantnlrs** : interproscan  
+**findplantnlrs** : genemark configured for container (see assets/genemark_setup.sh)
 
 ### getting started
 
@@ -29,12 +43,21 @@ apptainer --version
 ```
 
 ```
-nextflow <path to your pipeline>/ragnarok/main.nf \
-    --publish_dir <your desired results directory> \
-    --genome <path to reference genome> \
-    --skip_qc false \
-    --skip_trim false \
-    --skip_mark_dupe true \
+nextflow  ~/nextflow/ragnarok/main.nf \
+    --publish_dir ${RESULTS}/ill_iso_test \
+    --genome ${DATA}/reference/fortune_primary_v1.4.0.fasta.masked \
+    --cds ${DATA}/reference/GCF_022201045.2_DVS_A1.0_cds_from_genomic.fna.gz \
+    --protein ${DATA}/reference/GCF_022201045.2_DVS_A1.0_protein.faa.gz \
+    --ill ${DATA}/raw/PRJNA999253_split \
+    --iso ${DATA}/raw/pacbio_newhall \
+    --skip_qc true \
+    --skip_trim true \
+    --nlrs true \
+    --ipscan ${DATA}/db/interproscan-5.67-99.0 \
+    --genemark ${DATA}/db/gmes_linux_64 \
+    --design gff_input_nlr.tsv \
+    --scoring ${DATA}/db/plant.yaml \
+    --homology ${DATA}/db/uniprotkb_taxonomy_id_33090_AND_reviewe_2025_03_07.fasta \
     -profile local,four \
     -resume
 ```
@@ -65,16 +88,27 @@ Below is a sample sbatch script to run the pipeline. You'll need to replace the 
 #SBATCH --error=job.e%J
 #SBATCH --output=job.o%J
 
+source config # paths to DATA, RESULTS
 module load nextflow/23.10.0
 
 export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
 
-nextflow  <path to your pipeline>/vary_cool/main.nf \
-    --publish_dir <your desired results directory> \
-    --genome <path to reference genome> \
-    --skip_qc false \
-    --skip_trim false \
+nextflow  ~/nextflow/ragnarok/main.nf \
+    --publish_dir ${RESULTS}/ill_iso_test \
+    --genome ${DATA}/reference/fortune_primary_v1.4.0.fasta.masked \
+    --cds ${DATA}/reference/GCF_022201045.2_DVS_A1.0_cds_from_genomic.fna.gz \
+    --protein ${DATA}/reference/GCF_022201045.2_DVS_A1.0_protein.faa.gz \
+    --ill ${DATA}/raw/PRJNA999253_split \
+    --iso ${DATA}/raw/pacbio_newhall \
+    --skip_qc true \
+    --skip_trim true \
+    --nlrs true \
+    --ipscan ${DATA}/db/interproscan-5.67-99.0 \
+    --genemark ${DATA}/db/gmes_linux_64 \
+    --design gff_input_nlr.tsv \
+    --scoring ${DATA}/db/plant.yaml \
+    --homology ${DATA}/db/uniprotkb_taxonomy_id_33090_AND_reviewe_2025_03_07.fasta \
     -profile slurm,custom \
     -resume
 ```
@@ -111,8 +145,8 @@ scontrol show partition short
 ### necessary steps  
 - [x] alignment 
   - [x] alignment - STAR
-  - [ ] alignment - long reads
-    - look at options for pacbio (splice) v. nanopore
+  - [x] alignment - long reads
+    - [ ] consider options for pacbio (splice) v. nanopore
 - [x] helixer
 - [x] stringtie
 - [x] gffread
@@ -120,28 +154,33 @@ scontrol show partition short
 - [x] mikado2
 - [x] busco
 - [x] handle additional gff input paths
-- [ ] determine steps where copying to publish_dir is needed
+- [x] determine steps where copying to publish_dir is needed
 
 ### optional steps  
 - [x] QC
 - [x] trimming
-- [ ] FindPlantNLRs annotation
-- [ ] EDTA masking
+- [x] FindPlantNLRs annotation
+    - [x] FindPlantNLRs detection for parsing mikado2 weights
+    - [x] FindPlantNLRs add to all_gffs_ch
 - [x] allow non land_plant model for Helixer (opened issue)
 - [ ] mikado2 plants.yaml max intron length (10k is good)
     - [ ] assets dir with angiosperms/gymnosperm preset
     - [ ] have a table of stats (toss citations in there)
-- [ ] allow for stringtie --mixed
-- [ ] allow "ill", "iso", or "mixed"
-- [ ] allow STAR and minimap to take in multiple fastq files
+- [x] allow for stringtie --mixed
+- [x] allow "ill", "iso", or "mixed"
+- [x] allow STAR and minimap to take in multiple fastq files
 
-### obstacles
-- [ ] mikado2 quay container is broken
+### obstacles/consider
+- [x] mikado2 quay container is broken
 - [ ] edta run fails on citrus genome (send error code) (rename scafs)
     - may need to rename scaffolds after running
 - [ ] find braker3 logs for duplicated genes
     - full table tsv, busco id numbers, status
     - breakdown of types (gff files)
+- [ ] findplantnlrs, if interrupted, requires removal of FindPlantNLRs dir
+```{bash}
+find work/ -type d -name "FindPlantNLRs"
+```
 
 ```mermaid
 flowchart TB
@@ -236,3 +275,47 @@ flowchart TB
     v44 --> v46
     end
 ```
+
+# tools used in ragnarok
+
+- [BUSCO](https://busco.ezlab.org)
+- [compleasm](https://github.com/huangnengCSU/compleasm)
+- [diamond](https://github.com/bbuchfink/diamond)
+- [EDTA](https://github.com/oushujun/EDTA)
+- [fastp](https://github.com/OpenGene/fastp)
+- [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [FindPlantNLRs](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
+- [gffread](https://github.com/gpertea/gffread)
+- [Helixer](https://github.com/weberlab-hhu/Helixer)
+- [Mikado](https://mikado.readthedocs.io/en/stable/)
+- [minimap2](https://github.com/lh3/minimap2)
+- [miniprot](https://github.com/lh3/miniprot)
+- [multiqc](https://github.com/MultiQC/MultiQC)
+- [pandas](https://pandas.pydata.org)
+- [samtools](https://www.htslib.org)
+- [STAR](https://github.com/alexdobin/STAR)
+- [StringTie](https://ccb.jhu.edu/software/stringtie/index.shtml)
+- [TransDecoder](https://github.com/TransDecoder/TransDecoder)
+
+# tool images
+
+- busco:quay.io/biocontainers/busco:5.8.2--pyhdfd78af_0
+- compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0
+- diamond:quay.io/biocontainers/diamond:2.1.11--h5ca1c30_1
+- edta:quay.io/biocontainers/edta:2.2.2--hdfd78af_1
+- fastp:quay.io/biocontainers/fastp:0.23.4--h125f33a_5
+- fastqc:quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0
+- findplantnlrs:docker://ryandk/findplantnlrs:latest
+- gffread:quay.io/biocontainers/gffread:0.12.7--h077b44d_6
+- helixer:docker://gglyptodon/helixer-docker:helixer_v0.3.4_cuda_12.2.2-cudnn8
+- mikado2:docker://gemygk/mikado:v2.3.5rc2
+- minimap2:quay.io/biocontainers/minimap2:2.28--h577a1d6_4
+- miniprot:quay.io/biocontainers/miniprot:0.13--h577a1d6_2
+- multiqc:quay.io/biocontainers/multiqc:1.24.1--pyhdfd78af_0
+- pandas:quay.io/biocontainers/pandas:1.5.2
+- samtools:quay.io/biocontainers/samtools:1.20--h50ea8bc_1
+- star:quay.io/biocontainers/star:2.7.11a--h0033a41_0
+- stringtie:quay.io/biocontainers/stringtie:3.0.0--h29c0135_0
+- transdecoder:quay.io/biocontainers/transdecoder:5.7.1--pl5321hdfd78af_0
+
+See conf/containers.config for most current versions.

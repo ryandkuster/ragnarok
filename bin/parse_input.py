@@ -63,6 +63,8 @@ def get_input():
 def expected_ids(df):
 	"""
 	Assert that the id field contains the expected input ids.
+	The helixer and stringtie, transdecoder, miniprot steps are by
+	design included in the annotation pipeline.
 	"""
 	exp_ls = ["hx", "st", "tr", "mp"]
 	for i in exp_ls:
@@ -83,7 +85,8 @@ def fields_okay(df, colnames):
 	Confirm that input fields are bool or numeric as needed.
 	If NaN present, replace with empty 0 for assert, then empty string.
 	"""
-	df["modifier"] = df["modifier"].replace(np.NaN, "0")
+	# df["modifier"] = df["modifier"].replace(np.NaN, "0")
+	df["modifier"] = df["modifier"].replace(np.nan, "0")
 
 	for i in colnames[2:]:
 		if i == "modifier":
@@ -124,10 +127,34 @@ def expected_gffs(df):
 
 
 def confirm_st_hx_status(st_present, hx_present):
+	"""
+	If stringtie gffs detected, confirm this matches user input for the
+	skip_st param. If helixer gff detected, confirm this matches the
+	user input for skip_hx.
+	"""
 	skip_st = True if sys.argv[2] == "true" else False
 	skip_hx = True if sys.argv[3] == "true" else False
 	assert st_present == skip_st, f"skip_st is {skip_st} but gff presence is {st_present}"
 	assert hx_present == skip_hx, f"skip_hx is {skip_hx} but gff presence is {hx_present}"
+
+
+def confirm_nlr_status(df):
+	"""
+	If user has nlrs == true, assert that no input gff for nlr id is
+	present.
+	"""
+	skip_nlr = False if sys.argv[4] == "true" else True
+	nlr_id = (df["id"] == "nlr").any()
+	nlr_present = df.loc[df["id"] == "nlr", "file"].notna().any()
+
+	if nlr_id:
+		assert skip_nlr != True, f"nlr id found and should be empty when params.nlr == true"
+		assert nlr_present != True, f"nlr id found but reserved for use with params.nlr, please rename id"
+
+	if not skip_nlr:
+		assert nlr_id == True, f"nlr id needs to be defined in params.design"
+
+	return nlr_present
 
 
 def write_existing(df):
@@ -141,7 +168,7 @@ def write_existing(df):
 				o.write(f"{i}\n")
 
 
-def adjust_names(df, st_present, hx_present):
+def adjust_names(df, st_present, hx_present, nlr_present):
 	"""
 	Once filepaths have been confirmed to exist or not, a table of all
 	files as they will appear once symlinked to mikado2 process is
@@ -153,6 +180,8 @@ def adjust_names(df, st_present, hx_present):
 		df.loc[df["id"] == "mp", "file"] = "aa_miniprot.gff"
 	if not hx_present:
 		df.loc[df["id"] == "hx", "file"] = "helixer.gff3"
+	if not nlr_present:
+		df.loc[df["id"] == "nlr", "file"] = "fpnlr_braker_aa_NLR.gff3"
 
 	df["file"] = df["file"].apply(os.path.basename)
 
@@ -166,8 +195,9 @@ def main():
 	df = fields_okay(df, colnames)
 	st_present, hx_present = expected_gffs(df)
 	confirm_st_hx_status(st_present, hx_present)
+	nlr_present = confirm_nlr_status(df)
 	write_existing(df)
-	df = adjust_names(df, st_present, hx_present)
+	df = adjust_names(df, st_present, hx_present, nlr_present)
 	df.to_csv("mikado.tsv", sep="\t", index=False, header=False)
 
 

@@ -1,0 +1,5 @@
+/nfs/home/rkuster/nextflow/ragnarok/bin/tests/gffs/helixer.gff3	hx	True		False	False
+/nfs/home/rkuster/nextflow/ragnarok/bin/tests/gffs/10kIntron_stringtie.gtf	st	True	1	False	True
+/nfs/home/rkuster/nextflow/ragnarok/bin/tests/gffs/transcripts.fasta.transdecoder.genome.gff3	tr	False	-0.5	False	False
+/nfs/home/rkuster/nextflow/ragnarok/bin/tests/gffs/aa_miniprot.gff	mp	True	1	False	False
+/nfs/home/rkuster/nextflow/ragnarok/bin/tests/gffs/custom.gff3	nlr	True	1	False	False

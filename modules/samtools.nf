@@ -4,20 +4,19 @@ process SAM_SORT {
 
     time 2.h
     cpus 24
-    memory 80.GB
+    memory 40.GB
 
     input:
-        tuple val(sample), path(bam)
+        path(bam_ls)
+        val(prefix)
 
     output:
-        tuple val(sample), path("*_Aligned.out.sort.bam"), emit: sort_ch
+        path("*sorted_merged.bam"), emit: sort_ch
 
     script:
         """
-        samtools sort \
-            -@ ${task.cpus} \
-            -o "${sample}"_Aligned.out.sort.bam \
-            $bam
+        samtools merge -@ 10 -f - $bam_ls | \
+        samtools sort -@ 10 -o ${prefix}_sorted_merged.bam
         """
 }
 
