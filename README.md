@@ -21,14 +21,14 @@ apptainer (1.1.8+)
 **genome**  
 **short/long reads**  
 **helixer** : helixer model https://zenodo.org/records/10836346  
-**mikado2** : mikado homology (e.g., uniprot 33090 for viridiplantae)  
-**mikado2** : mikado scoring (e.g., plant.yaml)  
+**mikado2** : mikado homology (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue))  
+**mikado2** : mikado scoring (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files))  
 **miniprot** : protein file (e.g., closest ref species)  
 
 #### optional files
 
-**edta** : cds file for your species  
-**findplantnlrs** : interproscan  
+**edta** : cds file for your species (used for masking)  
+**findplantnlrs** : interproscan ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))  
 **findplantnlrs** : genemark configured for container (see assets/genemark_setup.sh)
 
 ### getting started
