@@ -54,13 +54,13 @@ process FINDPLANTNLRS {
 
 process ANNOTATENLRS {
     label 'findplantnlrs'
-    label 'short'
+    label 'campus'
 
     containerOptions "--bind ~ --bind $fplnr:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
 
     publishDir(path: "${publish_dir}/find_plant_nlrs", mode: "copy")
 
-    time 3.h
+    time 12.h
     cpus 40
     memory 100.GB
 

@@ -4,7 +4,7 @@ process STAR_INDEX_NA {
 
     time 4.h
     cpus 10
-    memory 10.GB
+    memory 50.GB
 
     input:
         path(genome)

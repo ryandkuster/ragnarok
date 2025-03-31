@@ -48,7 +48,7 @@ workflow {
     */
 
     if (params.ill) {
-        fastq_ch = Channel.fromFilePairs("${params.ill}/*_R{1,2}*", checkIfExists: true, flat:true)
+        fastq_ch = Channel.fromFilePairs("${params.ill}/*_{R,}{1,2}*", checkIfExists: true, flat:true)
     }
     if (params.iso) {
         long_ch = Channel.fromPath("${params.iso}/*{fq,fastq}*", checkIfExists: true)
