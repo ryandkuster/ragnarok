@@ -4,7 +4,7 @@ process BUSCO {
   
     time 3.h
     cpus 20
-    memory 4.GB
+    memory 40.GB
 
     publishDir(path: "${publish_dir}/busco", mode: "copy")
   
