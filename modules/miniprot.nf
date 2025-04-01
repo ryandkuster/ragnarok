@@ -4,7 +4,7 @@ process MINIPROT {
 
     time 10.h
     cpus 20
-    memory 4.GB
+    memory 40.GB
 
     input:
         path(gff3)

@@ -181,9 +181,9 @@ workflow {
 
     if (params.nlrs == true) {
         FPNLRS_SETUP(params.genome)
-        FINDPLANTNLRS(FPNLRS_SETUP.out.fplnr_db_ch,
+        FINDPLANTNLRS(FPNLRS_SETUP.out.fpnlr_db_ch,
                       params.ipscan)
-        ANNOTATENLRS(FINDPLANTNLRS.out.fplnr_ch,
+        ANNOTATENLRS(FINDPLANTNLRS.out.fpnlr_ch,
                       params.ipscan,
                       params.genemark)
         all_gff_ch.mix(ANNOTATENLRS.out.nlr_gff_ch).set{ all_gff_ch }

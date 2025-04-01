@@ -29,3 +29,24 @@ process DIAMOND {
         """
 }
 
+process DMND_DB {
+    label 'diamond'
+    label 'short'
+
+    time 3.h
+    cpus 24
+    memory 20.GB
+
+    input:
+        tuple val(db_name), path(prot_input)
+
+    output:
+        path("mikado_prepared.blast.tsv"), emit: dmnd_ch
+
+    script:
+        """
+        diamond makedb \
+            --in $prot_input \
+            -d uniprot_sprot_diamond
+        """
+}

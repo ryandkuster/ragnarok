@@ -9,7 +9,7 @@ process FPNLRS_SETUP {
         path(genome)
 
     output:
-        path("FindPlantNLRs"), emit: fplnr_db_ch
+        path("FindPlantNLRs"), emit: fpnlr_db_ch
 
     script:
         """
@@ -28,21 +28,25 @@ process FINDPLANTNLRS {
     label 'findplantnlrs'
     label 'short'
 
-    containerOptions "--bind ~ --bind $fplnr_db:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan"
+    beforeScript 'mkdir FPNLR_workaround'
+    // containerOptions "--bind ~ --bind $fpnlr_db:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan"
+    containerOptions "--bind ~ --bind FPNLR_workaround:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan"
 
     time 3.h
     cpus 40
     memory 100.GB
 
     input:
-        path(fplnr_db)
+        path(fpnlr_db)
         path(ipscan)
 
     output:
-        path("FindPlantNLRs"), emit: fplnr_ch
+        // path("FindPlantNLRs"), emit: fpnlr_ch
+        path("FPNLR_workaround"), emit: fpnlr_ch
 
     script:
         """
+        cp -r ${fpnlr_db}/* FPNLR_workaround
         /opt/conda/bin/activate FindPlantNLRs
         cd /home/FindPlantNLRs/
         snakemake \
@@ -56,7 +60,10 @@ process ANNOTATENLRS {
     label 'findplantnlrs'
     label 'campus'
 
-    containerOptions "--bind ~ --bind $fplnr:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
+    beforeScript 'mkdir FindPlantNLRs'
+
+    // containerOptions "--bind ~ --bind $fpnlr:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
+    containerOptions "--bind ~ --bind FindPlantNLRs:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
 
     publishDir(path: "${publish_dir}/find_plant_nlrs", mode: "copy")
 
@@ -65,7 +72,7 @@ process ANNOTATENLRS {
     memory 100.GB
 
     input:
-        path(fplnr)
+        path(fpnlr)
         path(ipscan)
         path(genemark)
 
@@ -75,6 +82,7 @@ process ANNOTATENLRS {
 
     script:
         """
+        cp -r ${fpnlr}/* FindPlantNLRs
         cd /home/FindPlantNLRs
         /opt/conda/bin/activate Annotate_NLR
         export AUGUSTUS_SCRIPTS_PATH=/opt/conda/pkgs/augustus-3.5.0-pl5321heb9362c_5/bin/

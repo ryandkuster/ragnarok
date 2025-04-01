@@ -177,8 +177,9 @@ scontrol show partition short
 - [ ] find braker3 logs for duplicated genes
     - full table tsv, busco id numbers, status
     - breakdown of types (gff files)
-- [ ] findplantnlrs, if interrupted, requires removal of FindPlantNLRs dir
+- [x] findplantnlrs, if interrupted, requires removal of FindPlantNLRs dir
 ```{bash}
+# behavior fixed, but keep in case...
 find work/ -type d -name "FindPlantNLRs"
 ```
 
@@ -282,6 +283,7 @@ flowchart TB
 - [compleasm](https://github.com/huangnengCSU/compleasm)
 - [diamond](https://github.com/bbuchfink/diamond)
 - [EDTA](https://github.com/oushujun/EDTA)
+- [EnTAP2](https://entap.readthedocs.io/en/latest/index.html)
 - [fastp](https://github.com/OpenGene/fastp)
 - [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 - [FindPlantNLRs](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
@@ -303,6 +305,7 @@ flowchart TB
 - compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0
 - diamond:quay.io/biocontainers/diamond:2.1.11--h5ca1c30_1
 - edta:quay.io/biocontainers/edta:2.2.2--hdfd78af_1
+- entap:docker://plantgenomics/entap:2.2.0
 - fastp:quay.io/biocontainers/fastp:0.23.4--h125f33a_5
 - fastqc:quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0
 - findplantnlrs:docker://ryandk/findplantnlrs:latest
