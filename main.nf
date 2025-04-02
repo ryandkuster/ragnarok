@@ -96,7 +96,7 @@ workflow {
              params.cds)
         EDTA.out.mask_ch.set{ genome }
     } else {
-        params.genome.set{ genome }
+        genome = Channel.fromPath("${params.genome}", checkIfExists: true)
     }
 
     if (params.ill) {
