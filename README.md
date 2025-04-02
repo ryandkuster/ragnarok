@@ -16,13 +16,17 @@ nextflow (22.10.4+)
 apptainer (1.1.8+)
 
 ## required files
-**genome** : Provide your assembly (ideally with *simple* names if using EDTA masking option).  
-**short/long reads** : any combination of short/long reads can be used for input.  
-**helixer** : Helixer model https://zenodo.org/records/10836346 (land_plants default).  
-**miniprot** : Protein file for alignment (e.g., closest ref species).  
-**mikado2** : Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).  
-**mikado2** : Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).  
-**mikado2** : Mikado configuration table file (see Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/)).  
+
+|parameter|type|description|
+|:-|:-|:-|
+|`--genome`|.fna|Provide your assembly (ideally with *simple* names if using EDTA masking option).|
+|`--ill`|directory|Path to a directory containing paired end fastq files. (Required if `iso` not used)|
+|`--iso`|directory|Path to a directory containing long read fastq files. (Required if `ill` not used.)|
+|`--lineage`|.h5|Helixer model https://zenodo.org/records/10836346 (land_plants default).|
+|`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
+|`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
+|`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
+|`--design`|.tsv|Mikado configuration table file (see Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) and below).|
 
 The mikado2 stage of the pipeline requires a configuration table to weigh the input gene models and give model priority. For this `--design` input, Ragnarok has the mandatory fields (`hx`, `st`, `mp`, `tr`) for the helixer, stringtie, miniprot, and transdecoder models produced along the way. Users should leave the file field blank if they are to be performed in the pipeline, but all other fields should be present. 
 
@@ -38,7 +42,7 @@ Example tsv configuration (assets/mikado_conf.tsv):
 ```
 
 > [!NOTE]
-> _The first field is intentionally missing as Ragnarok will produce these outputs. _
+> _The first field is intentionally missing as Ragnarok will produce these outputs._
 
 Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
 
@@ -51,7 +55,7 @@ Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
 ```
 
 > [!NOTE]
-> _The first field is intentionally missing as Ragnarok will produce these outputs. _
+> _The first field is intentionally missing as Ragnarok will produce these outputs._
 
 Ragnarok also allows for any number of *existing* input annotations (gff3) to be input as additional models into the mikado2 stage of processing.
 
@@ -68,14 +72,16 @@ reference.gff3	at	True	5	True	False
 ```
 
 > [!NOTE]
-> _The filepath to existing gffs will need to be provided. _
+> _The filepath to existing gffs will need to be provided._
 
 
 ## optional files
 
-**edta** : cds file for your species (used for masking)  
-**findplantnlrs** : interproscan ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))  
-**findplantnlrs** : genemark configured for container (see assets/genemark_setup.sh)
+|parameter|type|description|
+|:-|:-|:-|
+|`--cds`|.fna|CDS file for your species for use with `--masked false` (used by EDTA)|
+|`--ipscan`|directory|Locally stored interproscan for use with `--nlrs true` ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))|
+|`--genemark`|directory|Genemark with key configured for use with `--nlrs true` (see assets/genemark_setup.sh)|
 
 # getting started
 
