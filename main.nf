@@ -94,10 +94,13 @@ workflow {
     if (params.masked == false) {
         EDTA(params.genome,
              params.cds)
+        EDTA.out.mask_ch.set{ genome }
+    } else {
+        params.genome.set{ genome }
     }
 
     if (params.ill) {
-        STAR_INDEX_NA(params.genome)
+        STAR_INDEX_NA(genome)
         STAR_MAP(
             fastq_ch,
             STAR_INDEX_NA.out.star_idx)
@@ -109,7 +112,7 @@ workflow {
  
     if (params.iso) {
         MINIMAP2(
-            params.genome,
+            genome,
             long_ch.collect())
         SAM_SORT_LONG(
             MINIMAP2.out.mp_ch,
@@ -133,13 +136,13 @@ workflow {
         }
  
         GFFREAD(st_ch,
-                params.genome)
+                genome)
  
         TRANSDECODER(st_ch,
-                     params.genome)
+                     genome)
  
         MINIPROT(TRANSDECODER.out.tr_ch,
-                 params.genome,
+                 genome,
                  params.protein)
 
         st_gff = GFFREAD.out.st_gff_ch
@@ -149,7 +152,7 @@ workflow {
 
     if (!params.skip_hx) {
         HELIXER_DB(params.lineage)
-        HELIXER(params.genome,
+        HELIXER(genome,
                 HELIXER_DB.out.db_ch,
                 params.subseq_len)
 
@@ -180,7 +183,7 @@ workflow {
     */
 
     if (params.nlrs == true) {
-        FPNLRS_SETUP(params.genome)
+        FPNLRS_SETUP(genome)
         FINDPLANTNLRS(FPNLRS_SETUP.out.fpnlr_db_ch,
                       params.ipscan)
         ANNOTATENLRS(FINDPLANTNLRS.out.fpnlr_ch,
@@ -197,7 +200,7 @@ workflow {
 
     MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
-                    params.genome,
+                    genome,
                     params.scoring,
                     params.homology)
 
@@ -211,10 +214,10 @@ workflow {
                     DIAMOND.out.dmnd_ch,
                     TRANSDECODER_ORF.out.orf_ch,
                     params.homology,
-                    params.genome)
+                    genome)
 
     GFFREAD_FINAL(THE_GRANDMASTER.out.gm_ch,
-                  params.genome)
+                  genome)
 
     /*
     --------------------------------------------------------------------

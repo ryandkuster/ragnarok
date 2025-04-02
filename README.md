@@ -9,31 +9,77 @@
 ################################################################################
 ```
 
-## quick start guide
+# requirements
 
-### requirements
-
-#### software
+## software
 nextflow (22.10.4+)  
 apptainer (1.1.8+)
 
-#### required files
-**genome**  
-**short/long reads**  
-**helixer** : helixer model https://zenodo.org/records/10836346  
-**mikado2** : mikado homology (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue))  
-**mikado2** : mikado scoring (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files))  
-**miniprot** : protein file (e.g., closest ref species)  
+## required files
+**genome** : Provide your assembly (ideally with *simple* names if using EDTA masking option).  
+**short/long reads** : any combination of short/long reads can be used for input.  
+**helixer** : Helixer model https://zenodo.org/records/10836346 (land_plants default).  
+**miniprot** : Protein file for alignment (e.g., closest ref species).  
+**mikado2** : Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).  
+**mikado2** : Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).  
+**mikado2** : Mikado configuration table file (see Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/)).  
 
-#### optional files
+The mikado2 stage of the pipeline requires a configuration table to weigh the input gene models and give model priority. For this `--design` input, Ragnarok has the mandatory fields (`hx`, `st`, `mp`, `tr`) for the helixer, stringtie, miniprot, and transdecoder models produced along the way. Users should leave the file field blank if they are to be performed in the pipeline, but all other fields should be present. 
+
+The fields in this file are `file location`, `alias`, `strand-specific`, `sample-score`, `reference`, and `exclude redundant models`. Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) provides further information on the choice of values in this table.
+
+Example tsv configuration (assets/mikado_conf.tsv):
+
+```
+	hx	True		False	False
+	st	True	1	False	True
+	tr	False	-0.5	False	False
+	mp	True	1	False	False
+```
+
+> [!NOTE]
+> _The first field is intentionally missing as Ragnarok will produce these outputs. _
+
+Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
+
+```
+	hx	True		False	False
+	st	True	1	False	True
+	tr	False	-0.5	False	False
+	mp	True	1	False	False
+	nlr	True	1	False	False
+```
+
+> [!NOTE]
+> _The first field is intentionally missing as Ragnarok will produce these outputs. _
+
+Ragnarok also allows for any number of *existing* input annotations (gff3) to be input as additional models into the mikado2 stage of processing.
+
+Hypothetical tsv configuration including combination of Ragnarok (empty file fields) and existing models:
+
+```
+	hx	True		False	False
+	st	True	1	False	True
+	tr	False	-0.5	False	False
+	mp	True	1	False	False
+cufflinks.gtf	cuff	True		False	False
+trinity.gff3	tr	False	-0.5	False	False
+reference.gff3	at	True	5	True	False
+```
+
+> [!NOTE]
+> _The filepath to existing gffs will need to be provided. _
+
+
+## optional files
 
 **edta** : cds file for your species (used for masking)  
 **findplantnlrs** : interproscan ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))  
 **findplantnlrs** : genemark configured for container (see assets/genemark_setup.sh)
 
-### getting started
+# getting started
 
-### running on a local server
+## running on a local server
 
 First, do you have a working nextflow/apptainer version?
 
@@ -42,22 +88,25 @@ nextflow -version
 apptainer --version
 ```
 
+Below is a sample script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
+
 ```
 nextflow  ~/nextflow/ragnarok/main.nf \
-    --publish_dir ${RESULTS}/ill_iso_test \
-    --genome ${DATA}/reference/fortune_primary_v1.4.0.fasta.masked \
-    --cds ${DATA}/reference/GCF_022201045.2_DVS_A1.0_cds_from_genomic.fna.gz \
-    --protein ${DATA}/reference/GCF_022201045.2_DVS_A1.0_protein.faa.gz \
-    --ill ${DATA}/raw/PRJNA999253_split \
-    --iso ${DATA}/raw/pacbio_newhall \
-    --skip_qc true \
-    --skip_trim true \
-    --nlrs true \
-    --ipscan ${DATA}/db/interproscan-5.67-99.0 \
-    --genemark ${DATA}/db/gmes_linux_64 \
-    --design gff_input_nlr.tsv \
-    --scoring ${DATA}/db/plant.yaml \
-    --homology ${DATA}/db/uniprotkb_taxonomy_id_33090_AND_reviewe_2025_03_07.fasta \
+    --publish_dir < path to results location > \
+    --genome      < path to genome in fasta > \
+    --cds         < path to cds fasta file > \
+    --protein     < path to protein (aa) fasta file > \
+    --ill         < path to directory that immediately contains all R1/R2 fastqs > \
+    --iso         < path to directory that immediately contains all long read fastqs > \
+    --masked      < bool > \
+    --skip_qc     < bool > \
+    --skip_trim   < bool > \
+    --nlrs        < bool > \
+    --ipscan      < path to interproscan directory > \
+    --genemark    < path to prepared genemark directory (see `optional files` section) > \
+    --design      < tsv file with expected gff files and weights for mikado > \
+    --scoring     < path to mikado scoring file (e.g., plant.yaml) > \
+    --homology    < path to homology fasta file (e.g., uniprot for you phylum )> \
     -profile local,four \
     -resume
 ```
@@ -65,7 +114,7 @@ nextflow  ~/nextflow/ragnarok/main.nf \
 Note the profile here is set up for use on a local server, but will likely require modification for your job. The `four` local profile is set up to use approximately 4 cpus maximum. Other presets exist in `conf/local.conf` and you can create your own by copying those examples.
 
 
-### running on a slurm server
+## running on a slurm server
 
 First, do you have a working nextflow/apptainer version?
 
@@ -74,7 +123,7 @@ nextflow -version
 apptainer --version
 ```
 
-Below is a sample sbatch script to run the pipeline. You'll need to replace the values with those that make sense for your use case.
+Below is a sample sbatch script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
 
 ```
 #!/bin/bash
@@ -88,41 +137,41 @@ Below is a sample sbatch script to run the pipeline. You'll need to replace the 
 #SBATCH --error=job.e%J
 #SBATCH --output=job.o%J
 
-source config # paths to DATA, RESULTS
 module load nextflow/23.10.0
 
 export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
 
 nextflow  ~/nextflow/ragnarok/main.nf \
-    --publish_dir ${RESULTS}/ill_iso_test \
-    --genome ${DATA}/reference/fortune_primary_v1.4.0.fasta.masked \
-    --cds ${DATA}/reference/GCF_022201045.2_DVS_A1.0_cds_from_genomic.fna.gz \
-    --protein ${DATA}/reference/GCF_022201045.2_DVS_A1.0_protein.faa.gz \
-    --ill ${DATA}/raw/PRJNA999253_split \
-    --iso ${DATA}/raw/pacbio_newhall \
-    --skip_qc true \
-    --skip_trim true \
-    --nlrs true \
-    --ipscan ${DATA}/db/interproscan-5.67-99.0 \
-    --genemark ${DATA}/db/gmes_linux_64 \
-    --design gff_input_nlr.tsv \
-    --scoring ${DATA}/db/plant.yaml \
-    --homology ${DATA}/db/uniprotkb_taxonomy_id_33090_AND_reviewe_2025_03_07.fasta \
+    --publish_dir < path to results location > \
+    --genome      < path to genome in fasta > \
+    --cds         < path to cds fasta file > \
+    --protein     < path to protein (aa) fasta file > \
+    --ill         < path to directory that immediately contains all R1/R2 fastqs > \
+    --iso         < path to directory that immediately contains all long read fastqs > \
+    --masked      < bool > \
+    --skip_qc     < bool > \
+    --skip_trim   < bool > \
+    --nlrs        < bool > \
+    --ipscan      < path to interproscan directory > \
+    --genemark    < path to prepared genemark directory (see `optional files` section) > \
+    --design      < tsv file with expected gff files and weights for mikado > \
+    --scoring     < path to mikado scoring file (e.g., plant.yaml) > \
+    --homology    < path to homology fasta file (e.g., uniprot for you phylum )> \
     -profile slurm,custom \
     -resume
 ```
 
 Based on your qos/partition, you may want to modify the `conf/slurm.config` and `conf/slurm_custom.config` files to handle your dataset.
 
-#### a few notes on slurm qos and partitions
+### a few notes on slurm qos and partitions
 
 This pipeline currently relies on four qos/partition configurations on the UTK ISAAC-NG system.
 
 - short : maximum 3 hours, 12 jobs submitted
 - campus : maximum 1 day, 94 jobs submitted
 - long : maximum 6 days, 14 jobs submitted
-- gpu : maximum 6 days, 14 jobs submitted
+- gpu : maximum 4 hours, 1 job submitted
 
 For each of the three labels found in `slurm.config` maxForks can be adjusted to qos that work on other sytems, and the imported clusterOptions for each can be updated with specific qos/partition/account information found in `slurm_custom.config`.
 
@@ -138,11 +187,11 @@ sacctmgr show qos where name=short
 scontrol show partition short
 ```
 
-## development planning:
+# development planning:
 
-### desired input considerations
+## desired input considerations
 
-### necessary steps  
+## necessary steps  
 - [x] alignment 
   - [x] alignment - STAR
   - [x] alignment - long reads
@@ -156,7 +205,7 @@ scontrol show partition short
 - [x] handle additional gff input paths
 - [x] determine steps where copying to publish_dir is needed
 
-### optional steps  
+## optional steps  
 - [x] QC
 - [x] trimming
 - [x] FindPlantNLRs annotation
@@ -170,7 +219,7 @@ scontrol show partition short
 - [x] allow "ill", "iso", or "mixed"
 - [x] allow STAR and minimap to take in multiple fastq files
 
-### obstacles/consider
+## obstacles/consider
 - [x] mikado2 quay container is broken
 - [ ] edta run fails on citrus genome (send error code) (rename scafs)
     - may need to rename scaffolds after running
@@ -299,7 +348,7 @@ flowchart TB
 - [StringTie](https://ccb.jhu.edu/software/stringtie/index.shtml)
 - [TransDecoder](https://github.com/TransDecoder/TransDecoder)
 
-# tool images
+## tool images
 
 - busco:quay.io/biocontainers/busco:5.8.2--pyhdfd78af_0
 - compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0

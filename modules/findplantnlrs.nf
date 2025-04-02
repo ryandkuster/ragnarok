@@ -29,7 +29,7 @@ process FINDPLANTNLRS {
     label 'short'
 
     beforeScript 'mkdir FPNLR_workaround'
-    // containerOptions "--bind ~ --bind $fpnlr_db:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan"
+
     containerOptions "--bind ~ --bind FPNLR_workaround:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan"
 
     time 3.h
@@ -47,6 +47,7 @@ process FINDPLANTNLRS {
     script:
         """
         cp -r ${fpnlr_db}/* FPNLR_workaround
+
         /opt/conda/bin/activate FindPlantNLRs
         cd /home/FindPlantNLRs/
         snakemake \
@@ -62,7 +63,6 @@ process ANNOTATENLRS {
 
     beforeScript 'mkdir FindPlantNLRs'
 
-    // containerOptions "--bind ~ --bind $fpnlr:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
     containerOptions "--bind ~ --bind FindPlantNLRs:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
 
     publishDir(path: "${publish_dir}/find_plant_nlrs", mode: "copy")
@@ -83,6 +83,7 @@ process ANNOTATENLRS {
     script:
         """
         cp -r ${fpnlr}/* FindPlantNLRs
+
         cd /home/FindPlantNLRs
         /opt/conda/bin/activate Annotate_NLR
         export AUGUSTUS_SCRIPTS_PATH=/opt/conda/pkgs/augustus-3.5.0-pl5321heb9362c_5/bin/

@@ -1,14 +1,16 @@
 #!/bin/bash
+tool_link=$1
+key_link=$2
 
 # download interproscan and genemark
-wget http://topaz.gatech.edu/GeneMark/tmp/GMtool_aqg0O/gmes_linux_64_4.tar.gz
+wget $tool_link
 
 # untar the directory
 tar -xvzf gmes_linux_64_4.tar.gz
 
 # rename it
 mv gmes_linux_64_4 gmes_linux_64
-wget http://topaz.gatech.edu/GeneMark/tmp/GMtool_aqg0O/gm_key_64.gz
+wget $key_link
 gunzip gm_key_64.gz
 
 # copy key

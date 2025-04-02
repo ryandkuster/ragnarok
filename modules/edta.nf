@@ -4,11 +4,17 @@ process EDTA {
 
     time 48.h
     cpus 24
-    memory 40.GB
+    memory 100.GB
+
+    publishDir(path: "${publish_dir}/edta_masking", mode: "copy")
 
     input:
         path(genome)
         path(cds)
+
+    output:
+        path("*.{masked,fa,gff3,pdf,sum}"), emit: edta_ch
+        path("*.masked"), emit: mask_ch
 
     script:
         """
