@@ -1,23 +1,25 @@
 nextflow.enable.dsl=2
 
-// adapter removal
-include { FASTP_ADAPTERS            } from "./modules/fastp.nf"
-
-// qc
+// raw read qc and adapter removal
 include { FASTQC as FASTQC_RAW      } from "./modules/fastqc.nf"
 include { FASTQC as FASTQC_TRIM     } from "./modules/fastqc.nf"
 include { MULTIQC as MULTIQC_RAW    } from "./modules/multiqc.nf"
 include { MULTIQC as MULTIQC_TRIM   } from "./modules/multiqc.nf"
+include { FASTP_ADAPTERS            } from "./modules/fastp.nf"
 
-// star + samtools
+// alignment
 include { STAR_INDEX_NA             } from "./modules/star.nf"
 include { STAR_MAP                  } from "./modules/star.nf"
 include { SAM_SORT                  } from "./modules/samtools.nf"
 include { SAM_SORT as SAM_SORT_LONG } from "./modules/samtools.nf"
 include { SAM_INDEX                 } from "./modules/samtools.nf"
+include { MINIMAP2                  } from './modules/minimap2.nf'
 
-// others
+// masking
 include { EDTA                      } from "./modules/edta.nf"
+include { EDTA_THRESHOLD            } from "./modules/edta.nf"
+
+// main annotations
 include { STRINGTIE                 } from "./modules/stringtie.nf"
 include { STRINGTIE_MIX             } from "./modules/stringtie.nf"
 include { GFFREAD                   } from "./modules/gffread.nf"
@@ -25,19 +27,24 @@ include { TRANSDECODER              } from "./modules/transdecoder.nf"
 include { MINIPROT                  } from "./modules/miniprot.nf"
 include { HELIXER                   } from "./modules/helixer.nf"
 include { HELIXER_DB                } from "./modules/helixer.nf"
+
+// intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
 include { MIKADO_CONF               } from "./modules/mikado2.nf"
 include { DIAMOND                   } from './modules/diamond.nf'
 include { THE_GRANDMASTER           } from './modules/mikado2.nf'
 include { TRANSDECODER_ORF          } from './modules/transdecoder.nf'
 include { GFFREAD_FINAL             } from './modules/gffread.nf'
+
+// annotation qc
 include { BUSCO                     } from './modules/busco.nf'
 include { COMPLEASM                 } from './modules/compleasm.nf'
 include { COMPLEASM_DB              } from './modules/compleasm.nf'
+
+// find plant nlrs
 include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
-include { MINIMAP2                  } from './modules/minimap2.nf'
 
 workflow {
 
@@ -91,16 +98,29 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    if (params.masked == false) {
-        EDTA(params.genome,
-             params.cds)
-        EDTA.out.mask_ch.set{ genome }
+    if (params.perform_masking == true) {
+        EDTA(
+            params.genome,
+            params.cds)
+        EDTA.out.mask_ch.set{ st_genome }
+
+        if (params.masking_threshold != false) {
+            EDTA_THRESHOLD(
+                EDTA.out.edta_ch,
+                params.genome,
+                params.masking_threshold)
+            EDTA_THRESHOLD.out.threshold_ch.set{ hx_genome }
+        } else {
+            EDTA.out.mask_ch.set{ hx_genome }
+        }
+
     } else {
-        genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
     }
 
     if (params.ill) {
-        STAR_INDEX_NA(genome)
+        STAR_INDEX_NA(st_genome)
         STAR_MAP(
             fastq_ch,
             STAR_INDEX_NA.out.star_idx)
@@ -112,14 +132,13 @@ workflow {
  
     if (params.iso) {
         MINIMAP2(
-            genome,
+            st_genome,
             long_ch.collect())
         SAM_SORT_LONG(
             MINIMAP2.out.mp_ch,
             "long")
     }
 
-    // TODO: consider allowing bam as input to bypass star mapping
     if (!params.skip_st) {
 
         if (params.ill && params.iso){
@@ -136,13 +155,13 @@ workflow {
         }
  
         GFFREAD(st_ch,
-                genome)
+                st_genome)
  
         TRANSDECODER(st_ch,
-                     genome)
+                     st_genome)
  
         MINIPROT(TRANSDECODER.out.tr_ch,
-                 genome,
+                 st_genome,
                  params.protein)
 
         st_gff = GFFREAD.out.st_gff_ch
@@ -152,7 +171,7 @@ workflow {
 
     if (!params.skip_hx) {
         HELIXER_DB(params.lineage)
-        HELIXER(genome,
+        HELIXER(hx_genome,
                 HELIXER_DB.out.db_ch,
                 params.subseq_len)
 
@@ -182,8 +201,9 @@ workflow {
     --------------------------------------------------------------------
     */
 
+    // TODO: add a check that this genome is not masked
     if (params.nlrs == true) {
-        FPNLRS_SETUP(genome)
+        FPNLRS_SETUP(params.genome)
         FINDPLANTNLRS(FPNLRS_SETUP.out.fpnlr_db_ch,
                       params.ipscan)
         ANNOTATENLRS(FINDPLANTNLRS.out.fpnlr_ch,
@@ -200,7 +220,7 @@ workflow {
 
     MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
-                    genome,
+                    params.genome,
                     params.scoring,
                     params.homology)
 
@@ -214,10 +234,10 @@ workflow {
                     DIAMOND.out.dmnd_ch,
                     TRANSDECODER_ORF.out.orf_ch,
                     params.homology,
-                    genome)
+                    params.genome)
 
     GFFREAD_FINAL(THE_GRANDMASTER.out.gm_ch,
-                  genome)
+                  params.genome)
 
     /*
     --------------------------------------------------------------------

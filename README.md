@@ -22,7 +22,6 @@ apptainer (1.1.8+)
 |`--genome`|.fna|Provide your assembly (ideally with *simple* names if using EDTA masking option).|
 |`--ill`|directory|Path to a directory containing paired end fastq files. (Required if `iso` not used)|
 |`--iso`|directory|Path to a directory containing long read fastq files. (Required if `ill` not used.)|
-|`--lineage`|.h5|Helixer model https://zenodo.org/records/10836346 (land_plants default).|
 |`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
 |`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
 |`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
@@ -79,9 +78,24 @@ reference.gff3	at	True	5	True	False
 
 |parameter|type|description|
 |:-|:-|:-|
-|`--cds`|.fna|CDS file for your species for use with `--masked false` (used by EDTA)|
+|`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
 |`--ipscan`|directory|Locally stored interproscan for use with `--nlrs true` ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))|
 |`--genemark`|directory|Genemark with key configured for use with `--nlrs true` (see assets/genemark_setup.sh)|
+
+## additional parameters
+
+|parameter|type|description|default|
+|:-|:-|:-|:-|
+|`--lineage`|url|URL path to helixer model https://zenodo.org/records/10836346.|"https://zenodo.org/records/10836346/files/land_plant_v0.3_a_0080.h5"|
+|`--subseq_len`|int|Helixer subseq length.|64152|
+|`--skip_qc`|bool|Perform fastqc/multiqc on raw read data.|true|
+|`--skip_trim`|bool|Perform adapter trimming on raw read data|true|
+|`--minimum_length`|int|Use with `--skip_trim`, minimum length read to keep when adapter trimming.|50|
+|`--perform_masking`|bool|Run EDTA to mask input genome (recommended).|false|
+|`--masking_threshold`|int|Use with `perform_masking` to custom hard-mask TEanno models >= this length.|1000|
+|`--skip_st`|bool|Requires st, tr, mp gff files locally (in `--design` file), bypass Stringtie steps.|false|
+|`--skip_hx`|bool|Requires hx file locally (in `--design` file), bypass Helixer step.|false|
+|`--contam`|comma-sep list|Entap list of taxa to consider as contaminants.|"insecta,fungi,bacteria"|
 
 # getting started
 
@@ -98,21 +112,21 @@ Below is a sample script to run the pipeline. You'll need to replace the `<>` va
 
 ```
 nextflow  ~/nextflow/ragnarok/main.nf \
-    --publish_dir < path to results location > \
-    --genome      < path to genome in fasta > \
-    --cds         < path to cds fasta file > \
-    --protein     < path to protein (aa) fasta file > \
-    --ill         < path to directory that immediately contains all R1/R2 fastqs > \
-    --iso         < path to directory that immediately contains all long read fastqs > \
-    --masked      < bool > \
-    --skip_qc     < bool > \
-    --skip_trim   < bool > \
-    --nlrs        < bool > \
-    --ipscan      < path to interproscan directory > \
-    --genemark    < path to prepared genemark directory (see `optional files` section) > \
-    --design      < tsv file with expected gff files and weights for mikado > \
-    --scoring     < path to mikado scoring file (e.g., plant.yaml) > \
-    --homology    < path to homology fasta file (e.g., uniprot for you phylum )> \
+    --publish_dir     < path to results location > \
+    --genome          < path to genome in fasta > \
+    --cds             < path to cds fasta file > \
+    --protein         < path to protein (aa) fasta file > \
+    --ill             < path to directory that immediately contains all R1/R2 fastqs > \
+    --iso             < path to directory that immediately contains all long read fastqs > \
+    --perform_masking < bool > \
+    --skip_qc         < bool > \
+    --skip_trim       < bool > \
+    --nlrs            < bool > \
+    --ipscan          < path to interproscan directory > \
+    --genemark        < path to prepared genemark directory (see `optional files` section) > \
+    --design          < tsv file with expected gff files and weights for mikado > \
+    --scoring         < path to mikado scoring file (e.g., plant.yaml) > \
+    --homology        < path to homology fasta file (e.g., uniprot for you phylum )> \
     -profile local,four \
     -resume
 ```
@@ -149,21 +163,21 @@ export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
 
 nextflow  ~/nextflow/ragnarok/main.nf \
-    --publish_dir < path to results location > \
-    --genome      < path to genome in fasta > \
-    --cds         < path to cds fasta file > \
-    --protein     < path to protein (aa) fasta file > \
-    --ill         < path to directory that immediately contains all R1/R2 fastqs > \
-    --iso         < path to directory that immediately contains all long read fastqs > \
-    --masked      < bool > \
-    --skip_qc     < bool > \
-    --skip_trim   < bool > \
-    --nlrs        < bool > \
-    --ipscan      < path to interproscan directory > \
-    --genemark    < path to prepared genemark directory (see `optional files` section) > \
-    --design      < tsv file with expected gff files and weights for mikado > \
-    --scoring     < path to mikado scoring file (e.g., plant.yaml) > \
-    --homology    < path to homology fasta file (e.g., uniprot for you phylum )> \
+    --publish_dir     < path to results location > \
+    --genome          < path to genome in fasta > \
+    --cds             < path to cds fasta file > \
+    --protein         < path to protein (aa) fasta file > \
+    --ill             < path to directory that immediately contains all R1/R2 fastqs > \
+    --iso             < path to directory that immediately contains all long read fastqs > \
+    --perform_masking < bool > \
+    --skip_qc         < bool > \
+    --skip_trim       < bool > \
+    --nlrs            < bool > \
+    --ipscan          < path to interproscan directory > \
+    --genemark        < path to prepared genemark directory (see `optional files` section) > \
+    --design          < tsv file with expected gff files and weights for mikado > \
+    --scoring         < path to mikado scoring file (e.g., plant.yaml) > \
+    --homology        < path to homology fasta file (e.g., uniprot for you phylum )> \
     -profile slurm,custom \
     -resume
 ```
@@ -212,8 +226,12 @@ scontrol show partition short
 - [x] determine steps where copying to publish_dir is needed
 
 ## optional steps  
-- [x] QC
-- [x] trimming
+- [ ] QC
+    - [x] FastQC for ill input
+    - [ ] LongQC for iso input
+- [ ] trimming
+    - [x] fastp for ill input
+    - [ ] ? for iso input
 - [x] FindPlantNLRs annotation
     - [x] FindPlantNLRs detection for parsing mikado2 weights
     - [x] FindPlantNLRs add to all_gffs_ch
@@ -224,6 +242,8 @@ scontrol show partition short
 - [x] allow for stringtie --mixed
 - [x] allow "ill", "iso", or "mixed"
 - [x] allow STAR and minimap to take in multiple fastq files
+- [ ] add EnTAP2 functional annotations
+- [ ] add liftover input (gff + genome) from closely related accession
 
 ## obstacles/consider
 - [x] mikado2 quay container is broken
@@ -242,98 +262,125 @@ find work/ -type d -name "FindPlantNLRs"
 flowchart TB
     subgraph " "
     subgraph params
-    v25["lineage"]
-    v15["read_type"]
-    v38["scoring"]
-    v39["homology"]
-    v11["masked"]
-    v2["skip_qc"]
-    v6["minimum_length"]
-    v30["skip_hx"]
-    v12["genome"]
-    v13["cds"]
-    v0["fastq_pe"]
-    v23["protein"]
-    v31["subseq_len"]
-    v34["design"]
-    v5["skip_trim"]
-    v19["skip_st"]
+    v40["lineage"]
+    v56["scoring"]
+    v57["homology"]
+    v2["iso"]
+    v53["genemark"]
+    v0["ill"]
+    v51["ipscan"]
+    v46["nlrs"]
+    v4["skip_qc"]
+    v8["minimum_length"]
+    v39["skip_hx"]
+    v14["genome"]
+    v15["cds"]
+    v34["protein"]
+    v42["subseq_len"]
+    v45["design"]
+    v7["skip_trim"]
+    v13["perform_masking"]
+    v25["skip_st"]
     end
-    v3([FASTQC_RAW])
-    v4([MULTIQC_RAW])
-    v7([FASTP_ADAPTERS])
-    v9([FASTQC_TRIM])
-    v10([MULTIQC_TRIM])
-    v14([EDTA])
-    v16([STAR_INDEX_NA])
-    v17([STAR_MAP])
-    v18([SAM_SORT])
-    v20([STRINGTIE])
-    v21([GFFREAD])
-    v22([TRANSDECODER])
-    v24([MINIPROT])
-    v26([HELIXER_DB])
-    v32([HELIXER])
-    v35([PARSE_INPUT])
-    v40([MIKADO_CONF])
-    v41([TRANSDECODER_ORF])
-    v42([DIAMOND])
-    v43([THE_GRANDMASTER])
-    v44([GFFREAD_FINAL])
-    v45([BUSCO])
-    v46([COMPLEASM])
-    v0 --> v3
-    v3 --> v4
-    v0 --> v7
-    v6 --> v7
-    v7 --> v9
-    v9 --> v10
-    v12 --> v14
-    v13 --> v14
-    v12 --> v16
-    v16 --> v17
-    v7 --> v17
-    v17 --> v18
-    v18 --> v20
-    v20 --> v21
-    v12 --> v21
+    v5([FASTQC_RAW])
+    v6([MULTIQC_RAW])
+    v9([FASTP_ADAPTERS])
+    v11([FASTQC_TRIM])
+    v12([MULTIQC_TRIM])
+    v16([EDTA])
+    v19([STAR_INDEX_NA])
+    v20([STAR_MAP])
+    v22([SAM_SORT])
+    v23([MINIMAP2])
+    v24([SAM_SORT_LONG])
+    v26([STRINGTIE_MIX])
+    v28([STRINGTIE])
+    v30([STRINGTIE])
+    v32([GFFREAD])
+    v33([TRANSDECODER])
+    v35([MINIPROT])
+    v41([HELIXER_DB])
+    v43([HELIXER])
+    v47([PARSE_INPUT])
+    v50([FPNLRS_SETUP])
+    v52([FINDPLANTNLRS])
+    v54([ANNOTATENLRS])
+    v58([MIKADO_CONF])
+    v59([TRANSDECODER_ORF])
+    v60([DIAMOND])
+    v61([THE_GRANDMASTER])
+    v62([GFFREAD_FINAL])
+    v63([BUSCO])
+    v64([COMPLEASM_DB])
+    v65([COMPLEASM])
+    v0 --> v5
+    v5 --> v6
+    v0 --> v9
+    v8 --> v9
+    v9 --> v11
+    v11 --> v12
+    v14 --> v16
+    v15 --> v16
+    v14 --> v19
+    v19 --> v20
+    v9 --> v20
     v20 --> v22
-    v12 --> v22
-    v22 --> v24
+    v2 --> v23
+    v14 --> v23
     v23 --> v24
-    v12 --> v24
-    v25 --> v26
-    v26 --> v32
-    v12 --> v32
-    v31 --> v32
+    v22 --> v26
+    v24 --> v26
+    v22 --> v28
+    v24 --> v30
+    v14 --> v32
+    v30 --> v32
+    v14 --> v33
+    v30 --> v33
+    v33 --> v35
     v34 --> v35
-    v19 --> v35
-    v30 --> v35
-    v32 --> v40
-    v35 --> v40
-    v21 --> v40
-    v38 --> v40
-    v22 --> v40
-    v39 --> v40
-    v24 --> v40
-    v12 --> v40
+    v14 --> v35
     v40 --> v41
-    v39 --> v42
-    v40 --> v42
-    v39 --> v43
-    v40 --> v43
     v41 --> v43
     v42 --> v43
-    v12 --> v43
-    v43 --> v44
-    v12 --> v44
-    v44 --> v45
-    v44 --> v46
+    v14 --> v43
+    v39 --> v47
+    v25 --> v47
+    v45 --> v47
+    v46 --> v47
+    v14 --> v50
+    v50 --> v52
+    v51 --> v52
+    v51 --> v54
+    v52 --> v54
+    v53 --> v54
+    v32 --> v58
+    v33 --> v58
+    v35 --> v58
+    v54 --> v58
+    v56 --> v58
+    v57 --> v58
+    v43 --> v58
+    v14 --> v58
+    v47 --> v58
+    v58 --> v59
+    v57 --> v60
+    v58 --> v60
+    v57 --> v61
+    v58 --> v61
+    v59 --> v61
+    v60 --> v61
+    v14 --> v61
+    v61 --> v62
+    v14 --> v62
+    v62 --> v63
+    v64 --> v65
+    v62 --> v65
     end
 ```
 
 # tools used in ragnarok
 
+- [bedtools](https://bedtools.readthedocs.io/en/latest/)
 - [BUSCO](https://busco.ezlab.org)
 - [compleasm](https://github.com/huangnengCSU/compleasm)
 - [diamond](https://github.com/bbuchfink/diamond)
@@ -356,6 +403,7 @@ flowchart TB
 
 ## tool images
 
+- bedtools:quay.io/biocontainers/bedtools:2.31.1--h13024bc_3
 - busco:quay.io/biocontainers/busco:5.8.2--pyhdfd78af_0
 - compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0
 - diamond:quay.io/biocontainers/diamond:2.1.11--h5ca1c30_1

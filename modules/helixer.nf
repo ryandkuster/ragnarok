@@ -22,7 +22,7 @@ process HELIXER {
     label 'helixer'
     label 'gpu'
 
-    time 4.h
+    time 12.h
     cpus 12
     memory 10.GB
 
