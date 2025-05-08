@@ -4,11 +4,11 @@
 Given an input tsv of input gff files or anticipated gff files, parse
 the input:
 	- [x] confirm helixer, stringtie, transdecoder, miniprot inputs are
-	  labelled correctly with hx, st, tr, and mp
+              labelled correctly with hx, st, tr, and mp
 	- [x] if input gff provided for the above expected fields, check
-	  that the path(s) exists locally
+              that the path(s) exists locally
 	- [x] if no input gffs in hx, str, tr, and mp, fill these fields
-		  with the generic names the pipeline will produce
+              with the generic names the pipeline will produce
 	- [x] additional gff files exist on the system
 	- [x] names are all unique
 	- [x] if st or hx is skipped on run, make sure the gffs are present.

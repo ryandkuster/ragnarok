@@ -27,3 +27,28 @@ process PARSE_INPUT {
             $nlrs
         """
 }
+
+process PROT_FIX {
+    label 'pandas'
+    label 'short'
+
+    time 12.m
+    cpus 2
+    memory 1.GB
+
+    stageInMode 'copy'
+
+    input:
+        path("*")
+
+    output:
+        path 'mikado.loci_out.proteins.fa', emit: prot_ch
+
+    script:
+        """
+        mv mikado.loci_out.proteins.fa original_mikado.loci_out.proteins.fa
+        prot_check.py \
+            original_mikado.loci_out.proteins.fa \
+            mikado.loci_out.proteins.fa
+        """
+}

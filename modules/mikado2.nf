@@ -7,7 +7,6 @@ process MIKADO_CONF {
     memory 4.GB
 
     publishDir(path: "${publish_dir}/mikado_conf", mode: "copy")
-    publishDir(path: "${publish_dir}/pre_mikado_gff", pattern: "*.{gtf,gff,gff3}", mode: "copy")
 
     input:
         path(all_gffs)
@@ -24,6 +23,10 @@ process MIKADO_CONF {
 
     script:
         """
+        for i in \$( ls *gff *gtf *gff3 ) ; do
+            cp \$i pre_mikado_\${i}
+        done
+
         mikado configure \
             --list mikado.tsv \
             --reference $genome \

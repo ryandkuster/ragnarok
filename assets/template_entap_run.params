@@ -1,0 +1,2 @@
+database=uniprot_sprot, refseq_plant
+contam=insecta,fungi,bacteria

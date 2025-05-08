@@ -30,11 +30,13 @@ include { HELIXER_DB                } from "./modules/helixer.nf"
 
 // intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
+include { PROT_FIX                  } from './modules/parse_input.nf'
 include { MIKADO_CONF               } from "./modules/mikado2.nf"
 include { DIAMOND                   } from './modules/diamond.nf'
 include { THE_GRANDMASTER           } from './modules/mikado2.nf'
 include { TRANSDECODER_ORF          } from './modules/transdecoder.nf'
 include { GFFREAD_FINAL             } from './modules/gffread.nf'
+include { AGAT_SUBSET               } from './modules/agat.nf'
 
 // annotation qc
 include { BUSCO                     } from './modules/busco.nf'
@@ -46,7 +48,26 @@ include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
 
+// find plant nlrs
+include { ENTAP_INI                 } from './modules/entap.nf'
+include { ENTAP_RUN                 } from './modules/entap.nf'
+
 workflow {
+
+    /*
+    --------------------------------------------------------------------
+        parse user design and gather input gffs
+    --------------------------------------------------------------------
+    */
+
+    PARSE_INPUT(params.design,
+                params.skip_st,
+                params.skip_hx,
+                params.nlrs)
+
+    PARSE_INPUT.out.path_ch
+        .splitCsv( header: false, sep: ',' )
+        .set { gff_path_ch }
 
     /*
     --------------------------------------------------------------------
@@ -139,6 +160,12 @@ workflow {
             "long")
     }
 
+    /*
+    --------------------------------------------------------------------
+        core ragnarok annotation steps
+    --------------------------------------------------------------------
+    */
+
     if (!params.skip_st) {
 
         if (params.ill && params.iso){
@@ -178,22 +205,15 @@ workflow {
         hx_gff = HELIXER.out.hx_ch
     }
 
-    /*
-    --------------------------------------------------------------------
-        parse user design and gather input gffs
-    --------------------------------------------------------------------
-    */
-
-    PARSE_INPUT(params.design,
-                params.skip_st,
-                params.skip_hx,
-                params.nlrs)
-
-    PARSE_INPUT.out.path_ch
-        .splitCsv( header: false, sep: ',' )
-        .set { gff_path_ch }
-
-    gff_path_ch.concat(hx_gff, st_gff, tr_gff, mp_gff).set{ all_gff_ch }
+    if (params.skip_hx == false && params.skip_st == false) {
+        gff_path_ch.concat(hx_gff, st_gff, tr_gff, mp_gff).set{ all_gff_ch }
+    } else if (params.skip_hx == false && params.skip_st == true) {
+        gff_path_ch.concat(hx_gff).set{ all_gff_ch }
+    } else if (params.skip_hx == true && params.skip_st == false) {
+        gff_path_ch.concat(st_gff, tr_gff, mp_gff).set{ all_gff_ch }
+    } else if (params.skip_hx == true && params.skip_st == true) {
+        gff_path_ch.set{ all_gff_ch }
+    }
 
     /*
     --------------------------------------------------------------------
@@ -249,5 +269,23 @@ workflow {
     COMPLEASM_DB()
     COMPLEASM(GFFREAD_FINAL.out.final_ch,
               COMPLEASM_DB.out.db_ch)
+
+    /*
+    --------------------------------------------------------------------
+        EnTAP functional annotation
+    --------------------------------------------------------------------
+    */
+    entap_conf = file("${projectDir}/assets/template_entap_config.ini")
+    entap_run = file("${projectDir}/assets/template_entap_run.params")
+    ENTAP_INI(entap_conf,
+              entap_run)
+    PROT_FIX(GFFREAD_FINAL.out.final_ch)
+    ENTAP_RUN(ENTAP_INI.out.conf_ch,
+              ENTAP_INI.out.run_ch,
+              ENTAP_INI.out.db_ch,
+              PROT_FIX.out.prot_ch)
+
+    AGAT_SUBSET(THE_GRANDMASTER.out.gm_ch,
+              ENTAP_RUN.out.annot_ch)
 
 }
