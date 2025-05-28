@@ -21,7 +21,7 @@ apptainer (1.1.8+)
 |:-|:-|:-|
 |`--genome`|.fna|Provide your assembly (ideally with *simple* names if using EDTA masking option).|
 |`--ill`|string|Required if `iso` not used. Path to a directory containing paired end fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in R1.[fq/fastq].gz .|
-|`--iso`|string|Required if `ill` not used. Path to a directory containing long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in R1.[fq/fastq].gz .|
+|`--iso`|string|Required if `ill` not used. Path to a directory containing long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq/fastq].gz .|
 |`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
 |`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
 |`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
