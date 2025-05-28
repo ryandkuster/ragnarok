@@ -403,6 +403,7 @@ flowchart TB
 
 ## tool images
 
+- agat:quay.io/biocontainers/agat:1.4.2--pl5321hdfd78af_0
 - bedtools:quay.io/biocontainers/bedtools:2.31.1--h13024bc_3
 - busco:quay.io/biocontainers/busco:5.8.2--pyhdfd78af_0
 - compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0
