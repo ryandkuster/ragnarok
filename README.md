@@ -108,6 +108,11 @@ nextflow -version
 apptainer --version
 ```
 
+Set a scratch directory for singularity.
+```
+SCRATCHDIR= <path>
+```
+
 Below is a sample script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
 
 ```
@@ -161,6 +166,7 @@ module load nextflow/23.10.0
 
 export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
+SCRATCHDIR= <path to scratch for singularity>
 
 nextflow run ~/nextflow/ragnarok/main.nf \
     --publish_dir     < path to results location > \
