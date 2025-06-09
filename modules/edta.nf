@@ -19,6 +19,9 @@ process EDTA {
     script:
         """
         # names have to be short!!! (<=13 chars)
+
+        unset -f which
+
         EDTA.pl \
             --genome $genome \
             --cds $cds \
