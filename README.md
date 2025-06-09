@@ -9,6 +9,10 @@
 ################################################################################
 ```
 
+Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using multiple lines of evidence.
+
+At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
+
 # requirements
 
 ## software
@@ -162,7 +166,7 @@ Below is a sample sbatch script to run the pipeline. You'll need to replace the 
 #SBATCH --error=job.e%J
 #SBATCH --output=job.o%J
 
-module load nextflow/23.10.0
+SCRATCHDIR=< path to a directory to store singularity cache >
 
 export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
@@ -248,12 +252,12 @@ scontrol show partition short
 - [x] allow for stringtie --mixed
 - [x] allow "ill", "iso", or "mixed"
 - [x] allow STAR and minimap to take in multiple fastq files
-- [ ] add EnTAP2 functional annotations
+- [x] add EnTAP2 functional annotations
 - [ ] add liftover input (gff + genome) from closely related accession
 
 ## obstacles/consider
 - [x] mikado2 quay container is broken
-- [ ] edta run fails on citrus genome (send error code) (rename scafs)
+- [x] edta run fails on citrus genome (send error code) (rename scafs)
     - may need to rename scaffolds after running
 - [ ] find braker3 logs for duplicated genes
     - full table tsv, busco id numbers, status
@@ -386,6 +390,7 @@ flowchart TB
 
 # tools used in ragnarok
 
+- [AGAT](https://agat.readthedocs.io/en/latest/)
 - [bedtools](https://bedtools.readthedocs.io/en/latest/)
 - [BUSCO](https://busco.ezlab.org)
 - [compleasm](https://github.com/huangnengCSU/compleasm)

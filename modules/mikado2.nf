@@ -23,8 +23,11 @@ process MIKADO_CONF {
 
     script:
         """
-        for i in \$( ls *gff *gtf *gff3 ) ; do
-            cp \$i pre_mikado_\${i}
+        for ext in gff gtf gff3; do
+            find . -maxdepth 1 -name "*.\${ext}" -print | while read -r file; do
+                file=\$(basename \$file)
+                cp \$file pre_mikado_\${file}
+            done
         done
 
         mikado configure \

@@ -1,10 +1,10 @@
 process ENTAP_INI {
     label 'entap'
-    label 'short'
+    label 'campus'
 
-    time 3.h
+    time 12.h
     cpus 20
-    memory 20.GB
+    memory 60.GB
 
     input:
         path(entap_conf)
