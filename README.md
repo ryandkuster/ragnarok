@@ -5,7 +5,7 @@
 #                                   RAGNAROK!                                  #
 #                         RApid Genome anNotAtion ROcKs!                       #
 #                          Chris Gottschalk 12/6/2024                          #
-#                                    v1.1                                      #
+#                                    v2.1                                      #
 ################################################################################
 ```
 
@@ -24,8 +24,8 @@ apptainer (1.1.8+)
 |parameter|type|description|
 |:-|:-|:-|
 |`--genome`|.fna|Provide your assembly (ideally with *simple* names if using EDTA masking option).|
-|`--ill`|directory|Path to a directory containing paired end fastq files. (Required if `iso` not used)|
-|`--iso`|directory|Path to a directory containing long read fastq files. (Required if `ill` not used.)|
+|`--ill`|string|Required if `iso` not used. Path to a directory containing paired end fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in R1.[fq|fastq].gz .|
+|`--iso`|string|Required if `ill` not used. Path to a directory containing long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq|fastq].gz .|
 |`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
 |`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
 |`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
@@ -112,12 +112,15 @@ nextflow -version
 apptainer --version
 ```
 
+Set a scratch directory for singularity.
+```
+SCRATCHDIR= <path>
+```
+
 Below is a sample script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
 
 ```
-SCRATCHDIR=< path to a directory to store singularity cache >
-
-nextflow  ~/nextflow/ragnarok/main.nf \
+nextflow run ~/nextflow/ragnarok/main.nf \
     --publish_dir     < path to results location > \
     --genome          < path to genome in fasta > \
     --cds             < path to cds fasta file > \
@@ -167,8 +170,9 @@ SCRATCHDIR=< path to a directory to store singularity cache >
 
 export NXF_OPTS="-Xms500M -Xmx2G"
 export NXF_ANSI_LOG=false
+SCRATCHDIR= <path to scratch for singularity>
 
-nextflow  ~/nextflow/ragnarok/main.nf \
+nextflow run ~/nextflow/ragnarok/main.nf \
     --publish_dir     < path to results location > \
     --genome          < path to genome in fasta > \
     --cds             < path to cds fasta file > \
