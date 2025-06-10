@@ -217,174 +217,149 @@ sacctmgr show qos where name=short
 scontrol show partition short
 ```
 
-# development planning:
-
-## desired input considerations
-
-## necessary steps  
-- [x] alignment 
-  - [x] alignment - STAR
-  - [x] alignment - long reads
-    - [ ] consider options for pacbio (splice) v. nanopore
-- [x] helixer
-- [x] stringtie
-- [x] gffread
-- [x] miniprot
-- [x] mikado2
-- [x] busco
-- [x] handle additional gff input paths
-- [x] determine steps where copying to publish_dir is needed
-
-## optional steps  
-- [ ] QC
-    - [x] FastQC for ill input
-    - [ ] LongQC for iso input
-- [ ] trimming
-    - [x] fastp for ill input
-    - [ ] ? for iso input
-- [x] FindPlantNLRs annotation
-    - [x] FindPlantNLRs detection for parsing mikado2 weights
-    - [x] FindPlantNLRs add to all_gffs_ch
-- [x] allow non land_plant model for Helixer (opened issue)
-- [ ] mikado2 plants.yaml max intron length (10k is good)
-    - [ ] assets dir with angiosperms/gymnosperm preset
-    - [ ] have a table of stats (toss citations in there)
-- [x] allow for stringtie --mixed
-- [x] allow "ill", "iso", or "mixed"
-- [x] allow STAR and minimap to take in multiple fastq files
-- [x] add EnTAP2 functional annotations
-- [ ] add liftover input (gff + genome) from closely related accession
-
-## obstacles/consider
-- [x] mikado2 quay container is broken
-- [x] edta run fails on citrus genome (send error code) (rename scafs)
-    - may need to rename scaffolds after running
-- [ ] find braker3 logs for duplicated genes
-    - full table tsv, busco id numbers, status
-    - breakdown of types (gff files)
-- [x] findplantnlrs, if interrupted, requires removal of FindPlantNLRs dir
-```{bash}
-# behavior fixed, but keep in case...
-find work/ -type d -name "FindPlantNLRs"
-```
-
 ```mermaid
 flowchart TB
     subgraph " "
     subgraph params
-    v40["lineage"]
-    v56["scoring"]
-    v57["homology"]
-    v2["iso"]
-    v53["genemark"]
-    v0["ill"]
-    v51["ipscan"]
-    v46["nlrs"]
-    v4["skip_qc"]
-    v8["minimum_length"]
-    v39["skip_hx"]
-    v14["genome"]
-    v15["cds"]
-    v34["protein"]
-    v42["subseq_len"]
-    v45["design"]
-    v7["skip_trim"]
-    v13["perform_masking"]
-    v25["skip_st"]
+    v52["lineage"]
+    v67["scoring"]
+    v68["homology"]
+    v8["iso"]
+    v64["genemark"]
+    v6["ill"]
+    v62["ipscan"]
+    v3["nlrs"]
+    v10["skip_qc"]
+    v14["minimum_length"]
+    v2["skip_hx"]
+    v20["genome"]
+    v21["cds"]
+    v26["masking_threshold"]
+    v0["design"]
+    v47["protein"]
+    v54["subseq_len"]
+    v13["skip_trim"]
+    v19["perform_masking"]
+    v1["skip_st"]
     end
-    v5([FASTQC_RAW])
-    v6([MULTIQC_RAW])
-    v9([FASTP_ADAPTERS])
-    v11([FASTQC_TRIM])
-    v12([MULTIQC_TRIM])
-    v16([EDTA])
-    v19([STAR_INDEX_NA])
-    v20([STAR_MAP])
-    v22([SAM_SORT])
-    v23([MINIMAP2])
-    v24([SAM_SORT_LONG])
-    v26([STRINGTIE_MIX])
-    v28([STRINGTIE])
-    v30([STRINGTIE])
-    v32([GFFREAD])
-    v33([TRANSDECODER])
-    v35([MINIPROT])
-    v41([HELIXER_DB])
-    v43([HELIXER])
-    v47([PARSE_INPUT])
-    v50([FPNLRS_SETUP])
-    v52([FINDPLANTNLRS])
-    v54([ANNOTATENLRS])
-    v58([MIKADO_CONF])
-    v59([TRANSDECODER_ORF])
-    v60([DIAMOND])
-    v61([THE_GRANDMASTER])
-    v62([GFFREAD_FINAL])
-    v63([BUSCO])
-    v64([COMPLEASM_DB])
-    v65([COMPLEASM])
-    v0 --> v5
-    v5 --> v6
-    v0 --> v9
-    v8 --> v9
-    v9 --> v11
+    v4([PARSE_INPUT])
+    v11([FASTQC_RAW])
+    v12([MULTIQC_RAW])
+    v15([FASTP_ADAPTERS])
+    v17([FASTQC_TRIM])
+    v18([MULTIQC_TRIM])
+    v22([SCAF2NUM])
+    v23([EDTA])
+    v24([N2S_1])
+    v27([EDTA_THRESHOLD])
+    v28([N2S_2])
+    v33([STAR_INDEX_NA])
+    v34([STAR_MAP])
+    v36([SAM_SORT])
+    v37([MINIMAP2])
+    v38([SAM_SORT_LONG])
+    v39([STRINGTIE_MIX])
+    v41([STRINGTIE])
+    v43([STRINGTIE])
+    v45([GFFREAD])
+    v46([TRANSDECODER])
+    v48([MINIPROT])
+    v53([HELIXER_DB])
+    v55([HELIXER])
+    v61([FPNLRS_SETUP])
+    v63([FINDPLANTNLRS])
+    v65([ANNOTATENLRS])
+    v69([MIKADO_CONF])
+    v70([TRANSDECODER_ORF])
+    v71([DIAMOND])
+    v72([THE_GRANDMASTER])
+    v73([GFFREAD_FINAL])
+    v74([BUSCO])
+    v75([COMPLEASM_DB])
+    v76([COMPLEASM])
+    v79([ENTAP_INI])
+    v80([PROT_FIX])
+    v81([ENTAP_RUN])
+    v82([AGAT_SUBSET])
+    v0 --> v4
+    v1 --> v4
+    v2 --> v4
+    v3 --> v4
+    v6 --> v11
     v11 --> v12
-    v14 --> v16
-    v15 --> v16
-    v14 --> v19
-    v19 --> v20
-    v9 --> v20
+    v6 --> v15
+    v14 --> v15
+    v15 --> v17
+    v17 --> v18
     v20 --> v22
-    v2 --> v23
-    v14 --> v23
+    v21 --> v22
+    v22 --> v23
+    v22 --> v24
     v23 --> v24
-    v22 --> v26
-    v24 --> v26
+    v22 --> v27
+    v23 --> v27
+    v26 --> v27
     v22 --> v28
-    v24 --> v30
-    v14 --> v32
-    v30 --> v32
-    v14 --> v33
-    v30 --> v33
-    v33 --> v35
-    v34 --> v35
-    v14 --> v35
-    v40 --> v41
-    v41 --> v43
-    v42 --> v43
-    v14 --> v43
-    v39 --> v47
-    v25 --> v47
-    v45 --> v47
-    v46 --> v47
-    v14 --> v50
-    v50 --> v52
-    v51 --> v52
-    v51 --> v54
-    v52 --> v54
-    v53 --> v54
-    v32 --> v58
-    v33 --> v58
-    v35 --> v58
-    v54 --> v58
-    v56 --> v58
-    v57 --> v58
-    v43 --> v58
-    v14 --> v58
-    v47 --> v58
-    v58 --> v59
-    v57 --> v60
-    v58 --> v60
-    v57 --> v61
-    v58 --> v61
-    v59 --> v61
-    v60 --> v61
-    v14 --> v61
-    v61 --> v62
-    v14 --> v62
+    v27 --> v28
+    v20 --> v33
+    v33 --> v34
+    v15 --> v34
+    v34 --> v36
+    v20 --> v37
+    v8 --> v37
+    v37 --> v38
+    v36 --> v39
+    v38 --> v39
+    v36 --> v41
+    v38 --> v43
+    v20 --> v45
+    v43 --> v45
+    v20 --> v46
+    v43 --> v46
+    v20 --> v48
+    v46 --> v48
+    v47 --> v48
+    v52 --> v53
+    v20 --> v55
+    v53 --> v55
+    v54 --> v55
+    v20 --> v61
+    v61 --> v63
     v62 --> v63
     v64 --> v65
     v62 --> v65
+    v63 --> v65
+    v65 --> v69
+    v67 --> v69
+    v4 --> v69
+    v20 --> v69
+    v68 --> v69
+    v69 --> v70
+    v68 --> v71
+    v69 --> v71
+    v68 --> v72
+    v20 --> v72
+    v69 --> v72
+    v70 --> v72
+    v71 --> v72
+    v20 --> v73
+    v72 --> v73
+    v73 --> v74
+    v73 --> v76
+    v75 --> v76
+    v73 --> v80
+    v80 --> v81
+    v79 --> v81
+    v81 --> v82
+    v72 --> v82
+    v55 --> v72
+    v48 --> v72
+    v45 --> v72
+    v39 --> v45
+    v41 --> v45
+    v24 --> v33
+    v24 --> v37
+    v28 --> v55
     end
 ```
 

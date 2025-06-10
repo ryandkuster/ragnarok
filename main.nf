@@ -30,6 +30,10 @@ include { HELIXER_DB                } from "./modules/helixer.nf"
 
 // intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
+include { SCAF2NUM                  } from './modules/parse_input.nf'
+include { NUM2SCAF as N2S_1         } from './modules/parse_input.nf'
+include { NUM2SCAF as N2S_2         } from './modules/parse_input.nf'
+include { NOZIP_REF                 } from './modules/parse_input.nf'
 include { PROT_FIX                  } from './modules/parse_input.nf'
 include { MIKADO_CONF               } from "./modules/mikado2.nf"
 include { DIAMOND                   } from './modules/diamond.nf'
@@ -100,7 +104,6 @@ workflow {
         }
     }
 
-    // TODO: add QC for iso (long_ch) reads
     if (!params.skip_trim) {
         if (params.ill) {
             FASTP_ADAPTERS(fastq_ch, params.minimum_length)
@@ -115,30 +118,54 @@ workflow {
 
     /*
     --------------------------------------------------------------------
-        read alignment
+        genome masking
     --------------------------------------------------------------------
     */
 
     if (params.perform_masking == true) {
-        EDTA(
+        // Rename the input fastas with simple naming scheme.
+        SCAF2NUM(
             params.genome,
             params.cds)
-        EDTA.out.mask_ch.set{ st_genome }
 
+        // Perform masking of repetitive regions.
+        EDTA(
+            SCAF2NUM.out.s2n_ref_ch,
+            SCAF2NUM.out.s2n_cds_ch)
+
+        // Convert the EDTA hard-masked fasta to original naming scheme.
+        N2S_1(
+            EDTA.out.mask_ch,
+            SCAF2NUM.out.s2n_json_ch)
+
+        // Use the EDTA hard-masked genome for stringtie steps.
+        N2S_1.out.n2s_ref_ch.set{ st_genome }
+
+        // Optionally, allow a custom TE anno size (default 1kb) to
+        // allow more or less stringency for helixer annotations.
         if (params.masking_threshold != false) {
             EDTA_THRESHOLD(
                 EDTA.out.edta_ch,
-                params.genome,
+                SCAF2NUM.out.s2n_ref_ch,
                 params.masking_threshold)
-            EDTA_THRESHOLD.out.threshold_ch.set{ hx_genome }
+            N2S_2(
+                EDTA_THRESHOLD.out.threshold_ch,
+                SCAF2NUM.out.s2n_json_ch)
+            N2S_2.out.n2s_ref_ch.set{ hx_genome }
         } else {
-            EDTA.out.mask_ch.set{ hx_genome }
+            N2S_1.out.n2s_ref_ch.set{ hx_genome }
         }
 
     } else {
         st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
     }
+
+    /*
+    --------------------------------------------------------------------
+        read alignment
+    --------------------------------------------------------------------
+    */
 
     if (params.ill) {
         STAR_INDEX_NA(st_genome)
@@ -221,7 +248,6 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    // TODO: add a check that this genome is not masked
     if (params.nlrs == true) {
         FPNLRS_SETUP(params.genome)
         FINDPLANTNLRS(FPNLRS_SETUP.out.fpnlr_db_ch,
@@ -238,9 +264,12 @@ workflow {
     --------------------------------------------------------------------
     */
 
+    NOZIP_REF(params.genome)
+    NOZIP_REF.out.nozip_ref_ch.set{ mk_genome }
+
     MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
-                    params.genome,
+                    mk_genome,
                     params.scoring,
                     params.homology)
 
@@ -254,10 +283,10 @@ workflow {
                     DIAMOND.out.dmnd_ch,
                     TRANSDECODER_ORF.out.orf_ch,
                     params.homology,
-                    params.genome)
+                    mk_genome)
 
     GFFREAD_FINAL(THE_GRANDMASTER.out.gm_ch,
-                  params.genome)
+                  mk_genome)
 
     /*
     --------------------------------------------------------------------

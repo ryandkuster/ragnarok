@@ -52,3 +52,83 @@ process PROT_FIX {
             mikado.loci_out.proteins.fa
         """
 }
+
+process SCAF2NUM {
+    label 'pandas'
+    label 'short'
+
+    time 12.m
+    cpus 2
+    memory 1.GB
+
+    input:
+        path(genome)
+        path(cds)
+
+    output:
+        path 'scaf2num_genome.fna', emit: s2n_ref_ch
+        path 'scaf2num_cds.fna', emit: s2n_cds_ch
+        path 's2n_ref.json', emit: s2n_json_ch
+
+    script:
+        """
+        scaffold_to_number.py \
+            $genome \
+            scaf2num_genome.fna \
+            s2n_ref.json
+
+        scaffold_to_number.py \
+            $cds \
+            scaf2num_cds.fna \
+            s2n_cds.json
+        """
+}
+
+process NUM2SCAF {
+    label 'pandas'
+    label 'short'
+
+    time 12.m
+    cpus 2
+    memory 1.GB
+
+    input:
+        path(s2n_genome)
+        path(s2n_json)
+
+    output:
+        path 'num2scaf_genome.fna', emit: n2s_ref_ch
+
+    script:
+        """
+        number_to_scaffold.py \
+            $s2n_genome \
+            num2scaf_genome.fna \
+            s2n_ref.json
+        """
+}
+
+process NOZIP_REF {
+    label 'pandas'
+    label 'short'
+
+    time 12.m
+    cpus 2
+    memory 1.GB
+
+    input:
+        path(genome)
+
+    output:
+        path 'genome_unzip.fna', emit: nozip_ref_ch
+
+    script:
+        """
+        if [[ \$(head -c 2 "$genome" | od -An -tx1) =~ "1f 8b" ]]; then
+            cp $genome genome_unzip.fna.gz
+            gunzip genome_unzip.fna.gz
+        else
+            cp $genome genome_unzip.fna
+        fi
+        """
+}
