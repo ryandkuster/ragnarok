@@ -85,6 +85,8 @@ reference.gff3	at	True	5	True	False
 |`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
 |`--ipscan`|directory|Locally stored interproscan for use with `--nlrs true` ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))|
 |`--genemark`|directory|Genemark with key configured for use with `--nlrs true` (see assets/genemark_setup.sh)|
+|`--lo_genome`|.fna|Reference genome to use for liftover, requires corresponding `--lo_gff`|
+|`--lo_gff`|.gff|Reference annotations to use for liftover, requires corresponding `--lo_genome`|
 
 ## additional parameters
 

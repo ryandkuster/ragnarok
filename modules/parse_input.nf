@@ -13,6 +13,8 @@ process PARSE_INPUT {
         val(skip_st)
         val(skip_hx)
         val(nlrs)
+        val(lo_genome)
+        val(lo_gff)
 
     output:
         path 'mikado.tsv', emit: design_ch
@@ -24,7 +26,9 @@ process PARSE_INPUT {
             $design \
             $skip_st \
             $skip_hx \
-            $nlrs
+            $nlrs \
+            $lo_genome \
+            $lo_gff
         """
 }
 
