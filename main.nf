@@ -48,6 +48,9 @@ include { COMPLEASM                 } from './modules/compleasm.nf'
 include { COMPLEASM_DB              } from './modules/compleasm.nf'
 
 // find plant nlrs
+include { LIFTOFF                   } from './modules/liftover.nf'
+
+// find plant nlrs
 include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
@@ -67,11 +70,16 @@ workflow {
     PARSE_INPUT(params.design,
                 params.skip_st,
                 params.skip_hx,
-                params.nlrs)
+                params.nlrs,
+                params.lo_genome,
+                params.lo_gff)
 
     PARSE_INPUT.out.path_ch
         .splitCsv( header: false, sep: ',' )
         .set { gff_path_ch }
+
+    NOZIP_REF(params.genome)
+    NOZIP_REF.out.nozip_ref_ch.set{ mk_genome }
 
     /*
     --------------------------------------------------------------------
@@ -244,7 +252,20 @@ workflow {
 
     /*
     --------------------------------------------------------------------
-        find plant NLRs
+        lifton (optional)
+    --------------------------------------------------------------------
+    */
+
+    if (params.lo_genome) {
+        LIFTOFF(mk_genome,
+               params.lo_genome,
+               params.lo_gff)
+        all_gff_ch.mix(LIFTOFF.out.lo_ch).set{ all_gff_ch }
+    }
+
+    /*
+    --------------------------------------------------------------------
+        find plant NLRs (optional)
     --------------------------------------------------------------------
     */
 
@@ -263,9 +284,6 @@ workflow {
         mikado2
     --------------------------------------------------------------------
     */
-
-    NOZIP_REF(params.genome)
-    NOZIP_REF.out.nozip_ref_ch.set{ mk_genome }
 
     MIKADO_CONF(all_gff_ch.collect(),
                     PARSE_INPUT.out.design_ch,
