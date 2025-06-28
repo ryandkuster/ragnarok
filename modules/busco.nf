@@ -10,6 +10,7 @@ process BUSCO {
   
     input:
         path("*")
+        val(busco_db)
   
     output:
         path("busco_transcriptome/*"), emit: ch_score
@@ -21,6 +22,6 @@ process BUSCO {
             -i ./mikado.loci_out.transcripts.fa \
             -c ${task.cpus} \
             -o busco_transcriptome \
-            -l embryophyta_odb10
+            -l $busco_db
         """
 }

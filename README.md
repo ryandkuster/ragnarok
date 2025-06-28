@@ -13,6 +13,25 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
+
+## contents
+
+- [requirements](#requirements)
+  - [software](#software)
+  - [required files](#required-files)
+  - [optional files](#optional-files)
+  - [additional parameters](#additional-parameters)
+- [getting started](#getting-started)
+  - [running on a local server](#running-on-a-local-server)
+  - [running on a slurm server](#running-on-a-slurm-server)
+  - [a few notes on slurm qos and partitions](#a-few-notes-on-slurm-qos-and-partitions)
+- [experimental features](#getting-started)
+  - [EDTA masking](#EDTA-masking)
+  - [plant NLR annotation](#plant-NLR-annotation)
+- [tools used in ragnarok](#tools-used-in-ragnarok)
+  - [tool images](#tool-images)
+- [license](#license)
+
 # requirements
 
 ## software
@@ -47,19 +66,6 @@ Example tsv configuration (assets/mikado_conf.tsv):
 > [!NOTE]
 > _The first field is intentionally missing as Ragnarok will produce these outputs._
 
-Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
-
-```
-	hx	True		False	False
-	st	True	1	False	True
-	tr	False	-0.5	False	False
-	mp	True	1	False	False
-	nlr	True	1	False	False
-```
-
-> [!NOTE]
-> _The first field is intentionally missing as Ragnarok will produce these outputs._
-
 Ragnarok also allows for any number of *existing* input annotations (gff3) to be input as additional models into the mikado2 stage of processing.
 
 Hypothetical tsv configuration including combination of Ragnarok (empty file fields) and existing models:
@@ -77,14 +83,10 @@ reference.gff3	at	True	5	True	False
 > [!NOTE]
 > _The filepath to existing gffs will need to be provided._
 
-
 ## optional files
 
 |parameter|type|description|
 |:-|:-|:-|
-|`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
-|`--ipscan`|directory|Locally stored interproscan for use with `--nlrs true` ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))|
-|`--genemark`|directory|Genemark with key configured for use with `--nlrs true` (see assets/genemark_setup.sh)|
 |`--lo_genome`|.fna|Reference genome to use for liftover, requires corresponding `--lo_gff`|
 |`--lo_gff`|.gff|Reference annotations to use for liftover, requires corresponding `--lo_genome`|
 
@@ -97,11 +99,10 @@ reference.gff3	at	True	5	True	False
 |`--skip_qc`|bool|Perform fastqc/multiqc on raw read data.|true|
 |`--skip_trim`|bool|Perform adapter trimming on raw read data|true|
 |`--minimum_length`|int|Use with `--skip_trim`, minimum length read to keep when adapter trimming.|50|
-|`--perform_masking`|bool|Run EDTA to mask input genome (recommended).|false|
-|`--masking_threshold`|int|Use with `perform_masking` to custom hard-mask TEanno models >= this length.|1000|
 |`--skip_st`|bool|Requires st, tr, mp gff files locally (in `--design` file), bypass Stringtie steps.|false|
 |`--skip_hx`|bool|Requires hx file locally (in `--design` file), bypass Helixer step.|false|
 |`--contam`|comma-sep list|Entap list of taxa to consider as contaminants.|"insecta,fungi,bacteria"|
+|`--busco_db`|str|Desired BUSCO dataset from BUSCO v5.8.1 and above.|"embryophyta_odb12"|
 
 # getting started
 
@@ -217,6 +218,43 @@ sacctmgr show qos where name=short
 
 ```
 scontrol show partition short
+```
+
+# experimental features
+
+The following features are under development and work on many (but not all) systems.
+
+## EDTA masking
+
+|parameter|type|description|
+|:-|:-|:-|
+|`--perform_masking`|bool|Run EDTA to mask input genome (recommended).|false|
+|`--masking_threshold`|int|Use with `perform_masking` to custom hard-mask TEanno models >= this length.|EDTA default is 1000bp|
+|`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
+
+
+> [!NOTE]
+> _If EDTA does not work well with your server, consider running the [conda version](https://github.com/oushujun/EDTA?tab=readme-ov-file#install-with-condamamba-linux64) standalone and input the hard-masked genome as the --genome parameter before running Ragnarok._
+
+## plant NLR annotation
+
+|parameter|type|description|
+|:-|:-|:-|
+|`--nlrs`|bool|Run FindPlantNLRs.|false|
+|`--ipscan`|directory|Locally stored interproscan for use with `--nlrs true` ([64-bit download](https://www.ebi.ac.uk/interpro/download/InterProScan/))|
+|`--genemark`|directory|Genemark with key configured for use with `--nlrs true` (see assets/genemark_setup.sh)|
+
+> [!NOTE]
+> _Using FindPlantNLRs with a pre-masked genome is not recommended._
+
+Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
+
+```
+	hx	True		False	False
+	st	True	1	False	True
+	tr	False	-0.5	False	False
+	mp	True	1	False	False
+	nlr	True	1	False	False
 ```
 
 ```mermaid
@@ -379,6 +417,7 @@ flowchart TB
 - [FindPlantNLRs](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
 - [gffread](https://github.com/gpertea/gffread)
 - [Helixer](https://github.com/weberlab-hhu/Helixer)
+- [Liftoff](https://github.com/agshumate/Liftoff)
 - [Mikado](https://mikado.readthedocs.io/en/stable/)
 - [minimap2](https://github.com/lh3/minimap2)
 - [miniprot](https://github.com/lh3/miniprot)
@@ -394,7 +433,7 @@ flowchart TB
 - agat:quay.io/biocontainers/agat:1.4.2--pl5321hdfd78af_0
 - bedtools:quay.io/biocontainers/bedtools:2.31.1--h13024bc_3
 - busco:quay.io/biocontainers/busco:5.8.2--pyhdfd78af_0
-- compleasm:quay.io/biocontainers/compleasm:0.2.6--pyh7cba7a3_0
+- compleasm:quay.io/biocontainers/compleasm:0.2.7--pyh7e72e81_0
 - diamond:quay.io/biocontainers/diamond:2.1.11--h5ca1c30_1
 - edta:quay.io/biocontainers/edta:2.2.2--hdfd78af_1
 - entap:docker://plantgenomics/entap:2.2.0
@@ -403,6 +442,7 @@ flowchart TB
 - findplantnlrs:docker://ryandk/findplantnlrs:latest
 - gffread:quay.io/biocontainers/gffread:0.12.7--h077b44d_6
 - helixer:docker://gglyptodon/helixer-docker:helixer_v0.3.4_cuda_12.2.2-cudnn8
+- liftoff:docker://quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_1
 - mikado2:docker://gemygk/mikado:v2.3.5rc2
 - minimap2:quay.io/biocontainers/minimap2:2.28--h577a1d6_4
 - miniprot:quay.io/biocontainers/miniprot:0.13--h577a1d6_2
@@ -414,3 +454,5 @@ flowchart TB
 - transdecoder:quay.io/biocontainers/transdecoder:5.7.1--pl5321hdfd78af_0
 
 See conf/containers.config for most current versions.
+
+# license

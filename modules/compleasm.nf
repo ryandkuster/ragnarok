@@ -5,13 +5,16 @@ process COMPLEASM_DB {
     time 3.h
     cpus 20
     memory 4.GB
-  
+
+    input:
+        val(busco_db)
+
     output:
         path("mb_downloads"), emit: db_ch
   
     script:
         """
-        compleasm download embryophyta_odb10
+        compleasm download $busco_db
         """
 }
 
@@ -28,6 +31,7 @@ process COMPLEASM {
     input:
         path("*")
         path("*")
+        val(busco_db)
   
     output:
         path("compleasm/*"), emit: ch_score
@@ -36,7 +40,7 @@ process COMPLEASM {
         """
         compleasm protein \
             -p mikado.loci_out.proteins.fa \
-            -l embryophyta_odb10 \
+            -l $busco_db \
             -t ${task.cpus} \
             -o compleasm 
         """
