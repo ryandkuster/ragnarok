@@ -17,7 +17,7 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
 ## contents
 
 - [requirements](#requirements)
-  - [software](#software)
+  - [software prerequisites](#software-prerequisites)
   - [required files](#required-files)
   - [optional files](#optional-files)
   - [additional parameters](#additional-parameters)
@@ -34,9 +34,50 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
 
 # requirements
 
-## software
-nextflow (22.10.4+)  
-apptainer (1.1.8+)
+## software prerequisites
+**nextflow** (22.10.4+)  
+**apptainer** (1.1.8+)
+
+Ragnarok is built for LINUX-based systems and relies on **Nextflow** and **Apptainer** (FKA Singularity). Both must be installed and available in your working environment prior to use.
+
+Nextflow installation routes:
+- [Nextflow quick install guide](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java)
+- [Nextflow conda image](https://anaconda.org/bioconda/nextflow) (requires Anaconda)
+
+Assuming your machine is set up with the appropriate prerequisite Java version and you have permissions to do so, installing nextflow can be accomplished as follows:
+
+```bash
+mkdir -p ~/bin && cd ~/bin # optional location for binary
+curl -s https://get.nextflow.io | bash
+chmod +x nextflow
+```
+
+Apptainer installation routes:
+- [Apptainer quick install](https://apptainer.org/docs/user/latest/quick_start.html#quick-installation)
+- [Apptainer binary](https://apptainer.org/docs/admin/1.2/installation.html) See "Install unprivileged from pre-built binaries".
+- we recommend against using the conda package for singularity (v3.8.7) as it is quite dated and has been found to have unintended behaviors.
+
+A possible route to installing the `unprivileged` version of Apptainer might go something like this on your system:
+
+```bash
+mkdir -p ~/bin && cd ~/bin # optional location for binary
+curl -s https://raw.githubusercontent.com/apptainer/apptainer/main/tools/install-unprivileged.sh | bash -s - ~/
+```
+
+Add the following to your `.bashrc`, then run `source ~/.bashrc` to allow executables for nextflow and apptainer to be used anywhere on your system:
+
+```bash
+export PATH="$HOME/bin:$PATH"
+```
+
+Ragnarok is publicly available through [its github page](https://github.com/ryandkuster/ragnarok).
+
+Ragnarok can be cloned anywhere you'd like.
+
+```bash
+mkdir -p ~/nextflow && cd ~/nextflow # optional location, matches examples below
+git clone https://github.com/ryandkuster/ragnarok
+```
 
 ## required files
 
