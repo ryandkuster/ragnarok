@@ -31,8 +31,8 @@ include { HELIXER_DB                } from "./modules/helixer.nf"
 // intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
 include { SCAF2NUM                  } from './modules/parse_input.nf'
-include { NUM2SCAF as N2S_1         } from './modules/parse_input.nf'
-include { NUM2SCAF as N2S_2         } from './modules/parse_input.nf'
+include { NUM2SCAF as NUM2SCAF_1    } from './modules/parse_input.nf'
+include { NUM2SCAF as NUM2SCAF_2    } from './modules/parse_input.nf'
 include { NOZIP_REF                 } from './modules/parse_input.nf'
 include { PROT_FIX                  } from './modules/parse_input.nf'
 include { MIKADO_CONF               } from "./modules/mikado2.nf"
@@ -142,12 +142,12 @@ workflow {
             SCAF2NUM.out.s2n_cds_ch)
 
         // Convert the EDTA hard-masked fasta to original naming scheme.
-        N2S_1(
+        NUM2SCAF_1(
             EDTA.out.mask_ch,
             SCAF2NUM.out.s2n_json_ch)
 
         // Use the EDTA hard-masked genome for stringtie steps.
-        N2S_1.out.n2s_ref_ch.set{ st_genome }
+        NUM2SCAF_1.out.n2s_ref_ch.set{ st_genome }
 
         // Optionally, allow a custom TE anno size (default 1kb) to
         // allow more or less stringency for helixer annotations.
@@ -156,12 +156,12 @@ workflow {
                 EDTA.out.edta_ch,
                 SCAF2NUM.out.s2n_ref_ch,
                 params.masking_threshold)
-            N2S_2(
+            NUM2SCAF_2(
                 EDTA_THRESHOLD.out.threshold_ch,
                 SCAF2NUM.out.s2n_json_ch)
-            N2S_2.out.n2s_ref_ch.set{ hx_genome }
+            NUM2SCAF_2.out.n2s_ref_ch.set{ hx_genome }
         } else {
-            N2S_1.out.n2s_ref_ch.set{ hx_genome }
+            NUM2SCAF_1.out.n2s_ref_ch.set{ hx_genome }
         }
 
     } else {
@@ -312,10 +312,12 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    BUSCO(GFFREAD_FINAL.out.final_ch)
-    COMPLEASM_DB()
+    BUSCO(GFFREAD_FINAL.out.final_ch,
+          params.busco_db)
+    COMPLEASM_DB(params.busco_db)
     COMPLEASM(GFFREAD_FINAL.out.final_ch,
-              COMPLEASM_DB.out.db_ch)
+              COMPLEASM_DB.out.db_ch,
+              params.busco_db)
 
     /*
     --------------------------------------------------------------------
