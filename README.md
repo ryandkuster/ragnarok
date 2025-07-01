@@ -1,10 +1,15 @@
-# Ragnarok
+# Ragnarok!
+
+![GitHub release](https://img.shields.io/github/v/release/ryandkuster/ragnarok)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ryandkuster/ragnarok?include_prereleases)
+![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.0-23aa62.svg?labelColor=000000)
+![License](https://img.shields.io/github/license/ryandkuster/ragnarok)
+
 
 ```
 ################################################################################
 #                                   RAGNAROK!                                  #
 #                         RApid Genome anNotAtion ROcKs!                       #
-#                          Chris Gottschalk 12/6/2024                          #
 ################################################################################
 ```
 
@@ -496,3 +501,5 @@ flowchart TB
 See conf/containers.config for most current versions.
 
 # license
+
+<a href="https://github.com/ryandkuster/ragnarok/blob/master/LICENSE">MIT license</a>
