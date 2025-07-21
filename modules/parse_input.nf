@@ -63,7 +63,7 @@ process SCAF2NUM {
 
     time 12.m
     cpus 2
-    memory 1.GB
+    memory 10.GB
 
     input:
         path(genome)
@@ -94,7 +94,7 @@ process NUM2SCAF {
 
     time 12.m
     cpus 2
-    memory 1.GB
+    memory 10.GB
 
     input:
         path(s2n_genome)
