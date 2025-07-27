@@ -46,15 +46,15 @@ process STAR_MAP {
 
     script:
         """
-          STAR \
-            --genomeDir ${star_index} \
-            --readFilesIn ${r1} ${r2} \
-            --outFileNamePrefix ${sample} \
-            --outSAMstrandField intronMotif \
-            --runThreadN ${task.cpus} \
-            --readFilesCommand zcat \
-            --outSAMtype BAM Unsorted \
-            --alignIntronMax 10000 \
-            >& star_${sample}.out 
+        STAR \
+          --genomeDir ${star_index} \
+          --readFilesIn ${r1} ${r2} \
+          --outFileNamePrefix ${sample} \
+          --outSAMstrandField intronMotif \
+          --runThreadN ${task.cpus} \
+          --readFilesCommand zcat \
+          --outSAMtype BAM Unsorted \
+          --alignIntronMax 10000 \
+          >& star_${sample}.out 
         """
 }

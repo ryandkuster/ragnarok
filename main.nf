@@ -92,7 +92,6 @@ workflow {
     }
     if (params.iso) {
         long_ch = Channel.fromPath("${params.iso}*{fq,fastq}*", checkIfExists: true)
-        long_ch.view()
     }
 
     /*
@@ -177,9 +176,14 @@ workflow {
 
     if (params.ill) {
         STAR_INDEX_NA(st_genome)
+
+        // star_idx must be a value channel
+        star_idx = STAR_INDEX_NA.out.star_idx.collect()
+
         STAR_MAP(
             fastq_ch,
-            STAR_INDEX_NA.out.star_idx)
+            star_idx)
+
         STAR_MAP.out.bam_ch.map { item -> [item[1]] }.collect().set { star_ch }
         SAM_SORT(
             star_ch.collect(),
