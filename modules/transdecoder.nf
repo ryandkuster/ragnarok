@@ -4,7 +4,10 @@ process TRANSDECODER {
 
     time 2.h
     cpus 4
-    memory 4.GB
+    memory { 20.GB * task.attempt }
+
+    errorStrategy 'retry'
+    maxRetries 1
 
     input:
         path(gtf)

@@ -8,5 +8,4 @@ nextflow ../../main.nf \
     --fastq_pe /pickett_flora/projects/citrus/raw_data/RNASEQ_c_reticulata_PRJNA999253 \
     --skip_qc true \
     --skip_trim true \
-    -profile local,four \
-    -resume
+    -profile local,four
