@@ -4,7 +4,7 @@ process PARSE_INPUT {
 
     time 5.m
     cpus 2
-    memory 1.GB
+    memory 10.GB
 
     publishDir "${publish_dir}/design", mode: 'copy'
 
@@ -38,7 +38,7 @@ process PROT_FIX {
 
     time 12.m
     cpus 2
-    memory 1.GB
+    memory 10.GB
 
     stageInMode 'copy'
 
@@ -118,7 +118,7 @@ process NOZIP_REF {
 
     time 12.m
     cpus 2
-    memory 1.GB
+    memory 10.GB
 
     input:
         path(genome)
