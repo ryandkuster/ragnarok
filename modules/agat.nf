@@ -2,7 +2,7 @@ process AGAT_SUBSET {
     label 'agat'
     label 'short'
 
-    publishDir(path: "${publish_dir}/mikado_final", mode: "copy")
+    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy", pattern: "*.entap*.gff3")
 
     time 3.h
     cpus 20
@@ -11,10 +11,11 @@ process AGAT_SUBSET {
     input:
         tuple path(mk_loci), path(mk_subloci)
         path(entap_annot)
+        val(final_prefix)
 
     output:
-        path("mikado.loci_out.entap_filtered.gff3"), emit: subset_pass_ch
-        path("mikado.loci_out.entap_no_annotation.gff3"), emit: subset_fail_ch
+        path("*.entap_filtered.gff3"), emit: subset_pass_ch
+        path("*.entap_no_annotation.gff3"), emit: subset_fail_ch
 
     script:
         """
@@ -25,11 +26,11 @@ process AGAT_SUBSET {
         agat_sp_filter_feature_from_keep_list.pl \
             --gff mikado.loci_out.gff3 \
             --keep_list pass_ids.txt \
-            --output mikado.loci_out.entap_filtered.gff3
+            --output ${final_prefix}.entap_filtered.gff3
 
         agat_sp_filter_feature_from_keep_list.pl \
             --gff mikado.loci_out.gff3 \
             --keep_list fail_ids.txt \
-            --output mikado.loci_out.entap_no_annotation.gff3
+            --output ${final_prefix}.entap_no_annotation.gff3
         """
 }
