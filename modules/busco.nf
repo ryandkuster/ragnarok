@@ -6,22 +6,25 @@ process BUSCO {
     cpus 20
     memory 40.GB
 
-    publishDir(path: "${publish_dir}/busco", mode: "copy")
+    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy")
   
     input:
-        path("*")
+        tuple path(entap_transcripts), path(entap_proteins)
         val(busco_db)
+        val(final_prefix)
   
     output:
-        path("busco_transcriptome/*"), emit: ch_score
+        path("${final_prefix}.entap_filtered.busco_${busco_db}.txt"), emit: ch_score
   
     script:
         """
         busco \
             -m transcriptome \
-            -i ./mikado.loci_out.transcripts.fa \
+            -i $entap_transcripts \
             -c ${task.cpus} \
             -o busco_transcriptome \
             -l $busco_db
+        
+        cp busco_transcriptome/short_summary*.txt ${final_prefix}.entap_filtered.busco_${busco_db}.txt
         """
 }

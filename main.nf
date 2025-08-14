@@ -39,7 +39,8 @@ include { MIKADO_CONF               } from "./modules/mikado2.nf"
 include { DIAMOND                   } from './modules/diamond.nf'
 include { THE_GRANDMASTER           } from './modules/mikado2.nf'
 include { TRANSDECODER_ORF          } from './modules/transdecoder.nf'
-include { GFFREAD_FINAL             } from './modules/gffread.nf'
+include { GFFREAD_MIKADO            } from './modules/gffread.nf'
+include { GFFREAD_ENTAP             } from './modules/gffread.nf'
 include { AGAT_SUBSET               } from './modules/agat.nf'
 
 // annotation qc
@@ -307,8 +308,28 @@ workflow {
                     params.homology,
                     mk_genome)
 
-    GFFREAD_FINAL(THE_GRANDMASTER.out.gm_ch,
+    GFFREAD_MIKADO(THE_GRANDMASTER.out.gm_ch,
                   mk_genome)
+
+    /*
+    --------------------------------------------------------------------
+        EnTAP functional annotation
+    --------------------------------------------------------------------
+    */
+
+    entap_conf = file("${projectDir}/assets/template_entap_config.ini")
+    entap_run = file("${projectDir}/assets/template_entap_run.params")
+    ENTAP_INI(entap_conf,
+              entap_run)
+    PROT_FIX(GFFREAD_MIKADO.out.final_ch)
+    ENTAP_RUN(ENTAP_INI.out.conf_ch,
+              ENTAP_INI.out.run_ch,
+              ENTAP_INI.out.db_ch,
+              PROT_FIX.out.prot_ch)
+
+    AGAT_SUBSET(THE_GRANDMASTER.out.gm_ch,
+                ENTAP_RUN.out.annot_ch,
+                params.final_prefix)
 
     /*
     --------------------------------------------------------------------
@@ -316,29 +337,16 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    BUSCO(GFFREAD_FINAL.out.final_ch,
-          params.busco_db)
+    GFFREAD_ENTAP(AGAT_SUBSET.out.subset_pass_ch,
+                  mk_genome,
+                  params.final_prefix)
+    BUSCO(GFFREAD_ENTAP.out.final_ch,
+          params.busco_db,
+          params.final_prefix)
     COMPLEASM_DB(params.busco_db)
-    COMPLEASM(GFFREAD_FINAL.out.final_ch,
+    COMPLEASM(GFFREAD_ENTAP.out.final_ch,
               COMPLEASM_DB.out.db_ch,
-              params.busco_db)
-
-    /*
-    --------------------------------------------------------------------
-        EnTAP functional annotation
-    --------------------------------------------------------------------
-    */
-    entap_conf = file("${projectDir}/assets/template_entap_config.ini")
-    entap_run = file("${projectDir}/assets/template_entap_run.params")
-    ENTAP_INI(entap_conf,
-              entap_run)
-    PROT_FIX(GFFREAD_FINAL.out.final_ch)
-    ENTAP_RUN(ENTAP_INI.out.conf_ch,
-              ENTAP_INI.out.run_ch,
-              ENTAP_INI.out.db_ch,
-              PROT_FIX.out.prot_ch)
-
-    AGAT_SUBSET(THE_GRANDMASTER.out.gm_ch,
-              ENTAP_RUN.out.annot_ch)
+              params.busco_db,
+              params.final_prefix)
 
 }

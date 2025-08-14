@@ -6,7 +6,7 @@ process SAM_SORT {
     cpus 24
     memory 40.GB
 
-    publishDir(path: "${publish_dir}/alignments", mode: "copy")
+    publishDir(path: "${publish_dir}/alignments/sorted_bam", mode: "copy")
 
     input:
         path(bam_ls)

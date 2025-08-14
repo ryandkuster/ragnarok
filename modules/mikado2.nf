@@ -6,7 +6,7 @@ process MIKADO_CONF {
     cpus 20
     memory 4.GB
 
-    publishDir(path: "${publish_dir}/mikado_conf", mode: "copy")
+    publishDir(path: "${publish_dir}/mikado/mikado_in", mode: "copy")
 
     input:
         path(all_gffs)
@@ -49,7 +49,7 @@ process THE_GRANDMASTER {
     cpus 24
     memory 20.GB
 
-    publishDir(path: "${publish_dir}/mikado_final", mode: "copy")
+    publishDir(path: "${publish_dir}/mikado/mikado_out", mode: "copy")
 
     input:
         path(yaml)

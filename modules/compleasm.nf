@@ -26,22 +26,25 @@ process COMPLEASM {
     cpus 20
     memory 40.GB
 
-    publishDir(path: "${publish_dir}/compleasm", mode: "copy")
+    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy")
   
     input:
-        path("*")
+        tuple path(entap_transcripts), path(entap_proteins)
         path("*")
         val(busco_db)
+        val(final_prefix)
   
     output:
-        path("compleasm/*"), emit: ch_score
+        path("${final_prefix}.entap_filtered.compleasm_${busco_db}.txt"), emit: ch_score
   
     script:
         """
         compleasm protein \
-            -p mikado.loci_out.proteins.fa \
+            -p $entap_proteins \
             -l $busco_db \
             -t ${task.cpus} \
-            -o compleasm 
+            -o compleasm
+        
+        cp compleasm/summary.txt ${final_prefix}.entap_filtered.compleasm_${busco_db}.txt
         """
 }
