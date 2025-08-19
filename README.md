@@ -18,6 +18,7 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
 
+
 ## contents
 
 - [requirements](#requirements)
@@ -29,6 +30,9 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
   - [running on a local server](#running-on-a-local-server)
   - [running on a slurm server](#running-on-a-slurm-server)
   - [a few notes on slurm qos and partitions](#a-few-notes-on-slurm-qos-and-partitions)
+- [output files](#output-files)
+  - [output overview](#output-overview)
+  - [detailed output example](#detailed-output-example)
 - [experimental features](#getting-started)
   - [EDTA masking](#EDTA-masking)
   - [plant NLR annotation](#plant-NLR-annotation)
@@ -148,6 +152,7 @@ reference.gff3	at	True	5	True	False
 |`--skip_hx`|bool|Requires hx file locally (in `--design` file), bypass Helixer step.|false|
 |`--contam`|comma-sep list|Entap list of taxa to consider as contaminants.|"insecta,fungi,bacteria"|
 |`--busco_db`|str|Desired BUSCO dataset from BUSCO v5.8.1 and above.|"embryophyta_odb12"|
+|`--final_prefix`|str|File prefix for final files in RAGNAROK publish directory|"ragnarok"|
 
 # getting started
 
@@ -263,6 +268,73 @@ sacctmgr show qos where name=short
 
 ```
 scontrol show partition short
+```
+
+# output files
+
+## output overview
+
+Upon completion of the pipeline, the defined publish directory (`--publish_dir`) will contain the following subdirectories:
+
+```
+publish
+├── RAGNAROK           (final output files and associated sequences/summaries)
+├── alignments
+│   ├── sorted_bam
+│   └── star
+├── design             (relevant metadata from user input)
+├── entap
+│   └── entap_outfiles (EnTAP output directory with functional annotations)
+├── mikado
+│   ├── mikado_in      (gff files and configuration/scoring used as input)
+│   └── mikado_out     (the raw output of mikado)
+└── summary            (nextflow reports on run)
+```
+
+## detailed output example
+
+```
+publish
+├── RAGNAROK/
+│   ├── ragnarok.entap_filtered.busco_embryophyta_odb12.txt
+│   ├── ragnarok.entap_filtered.compleasm_embryophyta_odb12.txt
+│   ├── ragnarok.entap_filtered.gff3
+│   ├── ragnarok.entap_filtered.proteins.faa
+│   ├── ragnarok.entap_filtered.transcripts.fna
+│   └── ragnarok.entap_no_annotation.gff3
+├── alignments/
+│   ├── sorted_bam/
+│   │   └── short_sorted_merged.bam
+│   └── star/
+│       ├── CB_N_B_T1Aligned.out.bam -> <symlink>
+│       ├── CB_N_B_T1Log.final.out -> <symlink>
+│       ├── CB_N_B_T1Log.out -> <symlink>
+│       ├── CB_N_B_T1Log.progress.out -> <symlink>
+│       └── star_CB_N_B_T1.out -> <symlink>
+├── design/
+│   ├── gff_paths.csv
+│   └── mikado.tsv
+├── entap/
+│   └── entap_outfiles/
+│       └── final_results/
+├── mikado/
+│   ├── mikado_in/
+│   │   ├── configuration.yaml
+│   │   ├── genome_unzip.fna.fai
+│   │   ├── mikado_prepared.fasta
+│   │   ├── mikado_prepared.gtf
+│   │   ├── pre_mikado_10kIntron_stringtie.gff
+│   │   ├── pre_mikado_aa_miniprot.gff
+│   │   ├── pre_mikado_helixer.gff3
+│   │   └── pre_mikado_transcripts.fasta.transdecoder.genome.gff3
+│   └── mikado_out/
+│       ├── mikado.loci_out.gff3
+│       └── mikado.subloci.gff3
+└── summary/
+    ├── 2025-08-14_15-15_dag.html
+    ├── 2025-08-14_15-15_report.html
+    ├── 2025-08-14_15-15_timeline.html
+    └── 2025-08-14_15-15_trace.html
 ```
 
 # experimental features
