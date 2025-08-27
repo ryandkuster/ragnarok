@@ -183,7 +183,8 @@ workflow {
 
         STAR_MAP(
             fastq_ch,
-            star_idx)
+            star_idx,
+            params.max_intron)
 
         STAR_MAP.out.bam_ch.map { item -> [item[1]] }.collect().set { star_ch }
         SAM_SORT(
