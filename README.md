@@ -153,6 +153,7 @@ reference.gff3	at	True	5	True	False
 |`--contam`|comma-sep list|Entap list of taxa to consider as contaminants.|"insecta,fungi,bacteria"|
 |`--busco_db`|str|Desired BUSCO dataset from BUSCO v5.8.1 and above.|"embryophyta_odb12"|
 |`--final_prefix`|str|File prefix for final files in RAGNAROK publish directory|"ragnarok"|
+|`--max_intron`|int|Maximum intron length used for STAR alignIntronMax.|10000|
 
 # getting started
 
