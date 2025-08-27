@@ -39,6 +39,7 @@ process STAR_MAP {
     input:
         tuple val(sample), path(r1), path(r2)
         path(star_index)
+        val(max_intron)
 
     output:
         tuple val(sample), path("*.bam"), emit: bam_ch
@@ -54,7 +55,7 @@ process STAR_MAP {
           --runThreadN ${task.cpus} \
           --readFilesCommand zcat \
           --outSAMtype BAM Unsorted \
-          --alignIntronMax 10000 \
+          --alignIntronMax $max_intron \
           >& star_${sample}.out 
         """
 }

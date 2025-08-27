@@ -17,7 +17,7 @@ process STRINGTIE {
         stringtie \
             -p ${task.cpus} \
             $bam \
-            -o 10kIntron_stringtie.gtf
+            -o stringtie.gtf
         """
 }
 
@@ -43,6 +43,6 @@ process STRINGTIE_MIX {
             -p ${task.cpus} \
             $bam_ill \
             $bam_iso \
-            -o 10kIntron_stringtie.gtf
+            -o stringtie.gtf
         """
 }
