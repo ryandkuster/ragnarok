@@ -31,7 +31,7 @@ https://mikado.readthedocs.io/en/stable/Tutorial/
 
 Example for ragnarok base pipeline (using generic gff file names):
 helixer.gff3    hx    True        False    False
-10kIntron_stringtie.gtf    st    True    1    False    True
+stringtie.gtf    st    True    1    False    True
 transcripts.fasta.transdecoder.genome.gff3    tr    False    -0.5    False    False
 aa_miniprot.gff    mp    True    1    False    False
 """
@@ -200,7 +200,7 @@ def adjust_names(df, st_present, hx_present, nlr_present, lo_present):
     created as the configuration file.
     """
     if not st_present:
-        df.loc[df["id"] == "st", "file"] = "10kIntron_stringtie.gff"
+        df.loc[df["id"] == "st", "file"] = "stringtie.gff"
         df.loc[df["id"] == "tr", "file"] = "transcripts.fasta.transdecoder.genome.gff3"
         df.loc[df["id"] == "mp", "file"] = "aa_miniprot.gff"
     if not hx_present:

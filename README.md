@@ -17,7 +17,7 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
-
+<img src=assets/images/ragnarok.png width="275">
 
 ## contents
 
@@ -144,13 +144,13 @@ reference.gff3	at	True	5	True	False
 |parameter|type|description|default|
 |:-|:-|:-|:-|
 |`--lineage`|url|URL path to helixer model https://zenodo.org/records/10836346.|"https://zenodo.org/records/10836346/files/land_plant_v0.3_a_0080.h5"|
-|`--subseq_len`|int|Helixer subseq length.|64152|
+|`--subseq_len`|int|Helixer subseq length.|64152 (plants)|
 |`--skip_qc`|bool|Perform fastqc/multiqc on raw read data.|true|
 |`--skip_trim`|bool|Perform adapter trimming on raw read data|true|
 |`--minimum_length`|int|Use with `--skip_trim`, minimum length read to keep when adapter trimming.|50|
 |`--skip_st`|bool|Requires st, tr, mp gff files locally (in `--design` file), bypass Stringtie steps.|false|
 |`--skip_hx`|bool|Requires hx file locally (in `--design` file), bypass Helixer step.|false|
-|`--contam`|comma-sep list|Entap list of taxa to consider as contaminants.|"insecta,fungi,bacteria"|
+|`--entap_run`|.params file|Entap config defining databases and contaminants.|assets/template_entap_config.ini (plants))|
 |`--busco_db`|str|Desired BUSCO dataset from BUSCO v5.8.1 and above.|"embryophyta_odb12"|
 |`--final_prefix`|str|File prefix for final files in RAGNAROK publish directory|"ragnarok"|
 |`--max_intron`|int|Maximum intron length used for STAR alignIntronMax.|10000|
@@ -379,145 +379,167 @@ Example tsv configuration for `--nlrs true` (assets/mikado_nlr_conf.tsv):
 flowchart TB
     subgraph " "
     subgraph params
-    v52["lineage"]
-    v67["scoring"]
-    v68["homology"]
-    v8["iso"]
-    v64["genemark"]
-    v6["ill"]
-    v62["ipscan"]
+    v58["lineage"]
+    v76["homology"]
+    v4["lo_genome"]
+    v13["iso"]
+    v72["genemark"]
+    v82["entap_conf"]
     v3["nlrs"]
-    v10["skip_qc"]
-    v14["minimum_length"]
-    v2["skip_hx"]
-    v20["genome"]
-    v21["cds"]
-    v26["masking_threshold"]
+    v19["minimum_length"]
     v0["design"]
-    v47["protein"]
-    v54["subseq_len"]
-    v13["skip_trim"]
-    v19["perform_masking"]
+    v53["protein"]
+    v60["subseq_len"]
+    v83["entap_run"]
+    v24["perform_masking"]
+    v39["max_intron"]
     v1["skip_st"]
+    v90["busco_db"]
+    v75["scoring"]
+    v11["ill"]
+    v70["ipscan"]
+    v15["skip_qc"]
+    v87["final_prefix"]
+    v2["skip_hx"]
+    v8["genome"]
+    v25["cds"]
+    v30["masking_threshold"]
+    v18["skip_trim"]
+    v5["lo_gff"]
     end
-    v4([PARSE_INPUT])
-    v11([FASTQC_RAW])
-    v12([MULTIQC_RAW])
-    v15([FASTP_ADAPTERS])
-    v17([FASTQC_TRIM])
-    v18([MULTIQC_TRIM])
-    v22([SCAF2NUM])
-    v23([EDTA])
-    v24([N2S_1])
-    v27([EDTA_THRESHOLD])
-    v28([N2S_2])
-    v33([STAR_INDEX_NA])
-    v34([STAR_MAP])
-    v36([SAM_SORT])
-    v37([MINIMAP2])
-    v38([SAM_SORT_LONG])
-    v39([STRINGTIE_MIX])
-    v41([STRINGTIE])
-    v43([STRINGTIE])
-    v45([GFFREAD])
-    v46([TRANSDECODER])
-    v48([MINIPROT])
-    v53([HELIXER_DB])
-    v55([HELIXER])
-    v61([FPNLRS_SETUP])
-    v63([FINDPLANTNLRS])
-    v65([ANNOTATENLRS])
-    v69([MIKADO_CONF])
-    v70([TRANSDECODER_ORF])
-    v71([DIAMOND])
-    v72([THE_GRANDMASTER])
-    v73([GFFREAD_FINAL])
-    v74([BUSCO])
-    v75([COMPLEASM_DB])
-    v76([COMPLEASM])
-    v79([ENTAP_INI])
-    v80([PROT_FIX])
-    v81([ENTAP_RUN])
-    v82([AGAT_SUBSET])
-    v0 --> v4
-    v1 --> v4
-    v2 --> v4
-    v3 --> v4
-    v6 --> v11
-    v11 --> v12
-    v6 --> v15
-    v14 --> v15
-    v15 --> v17
-    v17 --> v18
+    v6([PARSE_INPUT])
+    v9([NOZIP_REF])
+    v16([FASTQC_RAW])
+    v17([MULTIQC_RAW])
+    v20([FASTP_ADAPTERS])
+    v22([FASTQC_TRIM])
+    v23([MULTIQC_TRIM])
+    v26([SCAF2NUM])
+    v27([EDTA])
+    v28([NUM2SCAF_1])
+    v31([EDTA_THRESHOLD])
+    v32([NUM2SCAF_2])
+    v37([STAR_INDEX_NA])
+    v40([STAR_MAP])
+    v42([SAM_SORT])
+    v43([MINIMAP2])
+    v44([SAM_SORT_LONG])
+    v45([STRINGTIE_MIX])
+    v47([STRINGTIE])
+    v49([STRINGTIE])
+    v51([GFFREAD])
+    v52([TRANSDECODER])
+    v54([MINIPROT])
+    v59([HELIXER_DB])
+    v61([HELIXER])
+    v67([LIFTOFF])
+    v69([FPNLRS_SETUP])
+    v71([FINDPLANTNLRS])
+    v73([ANNOTATENLRS])
+    v77([MIKADO_CONF])
+    v78([TRANSDECODER_ORF])
+    v79([DIAMOND])
+    v80([THE_GRANDMASTER])
+    v81([GFFREAD_MIKADO])
+    v84([ENTAP_INI])
+    v85([PROT_FIX])
+    v86([ENTAP_RUN])
+    v88([AGAT_SUBSET])
+    v89([GFFREAD_ENTAP])
+    v91([BUSCO])
+    v92([COMPLEASM_DB])
+    v93([COMPLEASM])
+    v0 --> v6
+    v1 --> v6
+    v2 --> v6
+    v3 --> v6
+    v4 --> v6
+    v5 --> v6
+    v8 --> v9
+    v11 --> v16
+    v16 --> v17
+    v19 --> v20
+    v11 --> v20
     v20 --> v22
-    v21 --> v22
     v22 --> v23
-    v22 --> v24
-    v23 --> v24
-    v22 --> v27
-    v23 --> v27
+    v8 --> v26
+    v25 --> v26
     v26 --> v27
-    v22 --> v28
+    v26 --> v28
     v27 --> v28
-    v20 --> v33
-    v33 --> v34
-    v15 --> v34
-    v34 --> v36
-    v20 --> v37
+    v26 --> v31
+    v27 --> v31
+    v30 --> v31
+    v26 --> v32
+    v31 --> v32
     v8 --> v37
-    v37 --> v38
-    v36 --> v39
-    v38 --> v39
-    v36 --> v41
-    v38 --> v43
-    v20 --> v45
-    v43 --> v45
-    v20 --> v46
-    v43 --> v46
-    v20 --> v48
-    v46 --> v48
-    v47 --> v48
-    v52 --> v53
-    v20 --> v55
-    v53 --> v55
-    v54 --> v55
-    v20 --> v61
-    v61 --> v63
-    v62 --> v63
-    v64 --> v65
-    v62 --> v65
-    v63 --> v65
-    v65 --> v69
-    v67 --> v69
-    v4 --> v69
-    v20 --> v69
-    v68 --> v69
-    v69 --> v70
-    v68 --> v71
+    v20 --> v40
+    v37 --> v40
+    v39 --> v40
+    v40 --> v42
+    v8 --> v43
+    v13 --> v43
+    v43 --> v44
+    v42 --> v45
+    v44 --> v45
+    v42 --> v47
+    v44 --> v49
+    v49 --> v51
+    v8 --> v51
+    v49 --> v52
+    v8 --> v52
+    v52 --> v54
+    v53 --> v54
+    v8 --> v54
+    v58 --> v59
+    v8 --> v61
+    v59 --> v61
+    v60 --> v61
+    v4 --> v67
+    v5 --> v67
+    v9 --> v67
+    v8 --> v69
     v69 --> v71
-    v68 --> v72
-    v20 --> v72
-    v69 --> v72
-    v70 --> v72
-    v71 --> v72
-    v20 --> v73
+    v70 --> v71
+    v70 --> v73
+    v71 --> v73
     v72 --> v73
-    v73 --> v74
-    v73 --> v76
-    v75 --> v76
-    v73 --> v80
+    v67 --> v77
+    v6 --> v77
+    v73 --> v77
+    v9 --> v77
+    v75 --> v77
+    v76 --> v77
+    v77 --> v78
+    v76 --> v79
+    v77 --> v79
+    v9 --> v80
+    v76 --> v80
+    v77 --> v80
+    v78 --> v80
+    v79 --> v80
     v80 --> v81
-    v79 --> v81
-    v81 --> v82
-    v72 --> v82
-    v55 --> v72
-    v48 --> v72
-    v45 --> v72
-    v39 --> v45
-    v41 --> v45
-    v24 --> v33
-    v24 --> v37
-    v28 --> v55
+    v9 --> v81
+    v82 --> v84
+    v83 --> v84
+    v81 --> v85
+    v84 --> v86
+    v85 --> v86
+    v80 --> v88
+    v86 --> v88
+    v87 --> v88
+    v87 --> v89
+    v88 --> v89
+    v9 --> v89
+    v87 --> v91
+    v89 --> v91
+    v90 --> v91
+    v90 --> v92
+    v87 --> v93
+    v89 --> v93
+    v90 --> v93
+    v92 --> v93
+    v28 --> v37
     end
 ```
 

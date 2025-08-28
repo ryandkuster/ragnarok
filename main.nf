@@ -318,10 +318,8 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    entap_conf = file("${projectDir}/assets/template_entap_config.ini")
-    entap_run = file("${projectDir}/assets/template_entap_run.params")
-    ENTAP_INI(entap_conf,
-              entap_run)
+    ENTAP_INI(params.entap_conf,
+              params.entap_run)
     PROT_FIX(GFFREAD_MIKADO.out.final_ch)
     ENTAP_RUN(ENTAP_INI.out.conf_ch,
               ENTAP_INI.out.run_ch,
