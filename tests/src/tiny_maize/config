@@ -1,0 +1,6 @@
+PROJ="${PWD%/*/*}"
+DATA=${PROJ}/data
+SRC=${PROJ}/src
+ANALYSIS=$( basename $PWD )
+DERIVED=${PROJ}/derived/${ANALYSIS}
+RESULTS=${PROJ}/results/${ANALYSIS}
