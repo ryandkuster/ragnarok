@@ -17,7 +17,7 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
-<img src=assets/images/ragnarok.png width="275">
+<img src=assets/images/ragnarok_nobg.png width="275">
 
 ## contents
 
@@ -30,6 +30,7 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
   - [running on a local server](#running-on-a-local-server)
   - [running on a slurm server](#running-on-a-slurm-server)
   - [a few notes on slurm qos and partitions](#a-few-notes-on-slurm-qos-and-partitions)
+  - [test run](#test-run)
 - [output files](#output-files)
   - [output overview](#output-overview)
   - [detailed output example](#detailed-output-example)
@@ -259,7 +260,7 @@ This pipeline currently relies on four qos/partition configurations on the UTK I
 
 For each of the three labels found in `slurm.config` maxForks can be adjusted to qos that work on other sytems, and the imported clusterOptions for each can be updated with specific qos/partition/account information found in `slurm_custom.config`.
 
-To check the limits for a given qos, replace short with any qos:
+To check the limits for a given qos on your system, replace `short` with any qos you have access to:
 
 ```
 sacctmgr show qos where name=short
@@ -269,6 +270,25 @@ sacctmgr show qos where name=short
 
 ```
 scontrol show partition short
+```
+
+### test run
+
+If you want to first see if the pipeline will work on your system, some smaller test files have been included in the `test` directory. On a local server (or within an interactive slurm sessions), navigate to `test/src/tiny_maize` and run:
+
+```bash
+bash local_ragnarok_tiny_maize.sh
+```
+
+> [!NOTE]
+> _This may take approximately 45 minutes depending on your resources as EnTAP will use the full reference databases._
+
+Assuming you have followed the nextflow/apptainer installation steps above, this should run.
+
+If you're running on a slurm-based system, you may modify the `conf/slurm.config` and `conf/slurm_custom.config` files to meet your system's qos and job submission limits and try running:
+
+```bash
+sbatch slurm_ragnarok_tiny_maize.sbatch
 ```
 
 # output files
@@ -312,9 +332,11 @@ publish
 │       ├── CB_N_B_T1Log.out -> <symlink>
 │       ├── CB_N_B_T1Log.progress.out -> <symlink>
 │       └── star_CB_N_B_T1.out -> <symlink>
+├── cutadapt
 ├── design/
 │   ├── gff_paths.csv
 │   └── mikado.tsv
+├── edta_masking
 ├── entap/
 │   └── entap_outfiles/
 │       └── final_results/
@@ -331,6 +353,10 @@ publish
 │   └── mikado_out/
 │       ├── mikado.loci_out.gff3
 │       └── mikado.subloci.gff3
+├── qc/
+│   ├── raw/
+│   └── trimmed/:w
+
 └── summary/
     ├── 2025-08-14_15-15_dag.html
     ├── 2025-08-14_15-15_report.html
@@ -381,11 +407,8 @@ flowchart TB
     subgraph params
     v58["lineage"]
     v76["homology"]
-    v4["lo_genome"]
     v13["iso"]
-    v72["genemark"]
     v82["entap_conf"]
-    v3["nlrs"]
     v19["minimum_length"]
     v0["design"]
     v53["protein"]
@@ -393,32 +416,21 @@ flowchart TB
     v83["entap_run"]
     v24["perform_masking"]
     v39["max_intron"]
-    v1["skip_st"]
     v90["busco_db"]
     v75["scoring"]
     v11["ill"]
-    v70["ipscan"]
-    v15["skip_qc"]
-    v87["final_prefix"]
-    v2["skip_hx"]
     v8["genome"]
     v25["cds"]
-    v30["masking_threshold"]
-    v18["skip_trim"]
-    v5["lo_gff"]
     end
+    v3("gff files")
+    v5("masked genome")
     v6([PARSE_INPUT])
-    v9([NOZIP_REF])
     v16([FASTQC_RAW])
     v17([MULTIQC_RAW])
     v20([FASTP_ADAPTERS])
     v22([FASTQC_TRIM])
     v23([MULTIQC_TRIM])
-    v26([SCAF2NUM])
     v27([EDTA])
-    v28([NUM2SCAF_1])
-    v31([EDTA_THRESHOLD])
-    v32([NUM2SCAF_2])
     v37([STAR_INDEX_NA])
     v40([STAR_MAP])
     v42([SAM_SORT])
@@ -426,16 +438,11 @@ flowchart TB
     v44([SAM_SORT_LONG])
     v45([STRINGTIE_MIX])
     v47([STRINGTIE])
-    v49([STRINGTIE])
     v51([GFFREAD])
     v52([TRANSDECODER])
     v54([MINIPROT])
     v59([HELIXER_DB])
     v61([HELIXER])
-    v67([LIFTOFF])
-    v69([FPNLRS_SETUP])
-    v71([FINDPLANTNLRS])
-    v73([ANNOTATENLRS])
     v77([MIKADO_CONF])
     v78([TRANSDECODER_ORF])
     v79([DIAMOND])
@@ -450,28 +457,15 @@ flowchart TB
     v92([COMPLEASM_DB])
     v93([COMPLEASM])
     v0 --> v6
-    v1 --> v6
-    v2 --> v6
-    v3 --> v6
-    v4 --> v6
-    v5 --> v6
-    v8 --> v9
     v11 --> v16
     v16 --> v17
     v19 --> v20
     v11 --> v20
     v20 --> v22
     v22 --> v23
-    v8 --> v26
-    v25 --> v26
-    v26 --> v27
-    v26 --> v28
-    v27 --> v28
-    v26 --> v31
-    v27 --> v31
-    v30 --> v31
-    v26 --> v32
-    v31 --> v32
+    v8 --> v27
+    v24 --> v27
+    v25 --> v27
     v8 --> v37
     v20 --> v40
     v37 --> v40
@@ -483,43 +477,41 @@ flowchart TB
     v42 --> v45
     v44 --> v45
     v42 --> v47
-    v44 --> v49
-    v49 --> v51
+    v27 --> v43
+    v27 --> v37
+    v27 --> v61
+    v44 --> v47
+    v45 --> v51
+    v47 --> v51
     v8 --> v51
-    v49 --> v52
+    v47 --> v52
     v8 --> v52
     v52 --> v54
+    v52 --> v3
+    v54 --> v3
+    v51 --> v3
+    v61 --> v3
     v53 --> v54
     v8 --> v54
     v58 --> v59
     v8 --> v61
     v59 --> v61
     v60 --> v61
-    v4 --> v67
-    v5 --> v67
-    v9 --> v67
-    v8 --> v69
-    v69 --> v71
-    v70 --> v71
-    v70 --> v73
-    v71 --> v73
-    v72 --> v73
-    v67 --> v77
+    v3 --> v77
     v6 --> v77
-    v73 --> v77
-    v9 --> v77
+    v8 --> v77
     v75 --> v77
     v76 --> v77
     v77 --> v78
     v76 --> v79
     v77 --> v79
-    v9 --> v80
+    v8 --> v80
     v76 --> v80
     v77 --> v80
     v78 --> v80
     v79 --> v80
     v80 --> v81
-    v9 --> v81
+    v8 --> v81
     v82 --> v84
     v83 --> v84
     v81 --> v85
@@ -527,19 +519,29 @@ flowchart TB
     v85 --> v86
     v80 --> v88
     v86 --> v88
-    v87 --> v88
-    v87 --> v89
     v88 --> v89
-    v9 --> v89
-    v87 --> v91
+    v8 --> v89
     v89 --> v91
     v90 --> v91
     v90 --> v92
-    v87 --> v93
     v89 --> v93
     v90 --> v93
     v92 --> v93
-    v28 --> v37
+    v88 --> v100
+    v89 --> v101
+    v89 --> v102
+    v91 --> v103
+    v93 --> v103
+    v17 --> v104
+    v23 --> v105
+    subgraph publish
+    v100["entap filtered gff"]
+    v101["entap filtered cds"]
+    v102["entap filtered protein"]
+    v103["BUSCO metrics"]
+    v104["raw qc"]
+    v105["trimmed qc"]
+    end
     end
 ```
 

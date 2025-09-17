@@ -23,7 +23,7 @@ genome=$DATA/tiny_maize/chr1_171332842_173553286.fa
 protein=$DATA/tiny_maize/subset_Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.faa
 ill=$DATA/tiny_maize/fastq/
 
-nextflow  ~/nextflow/ragnarok/main.nf \
+nextflow  ../../../main.nf \
     --design          ~/nextflow/ragnarok/assets/mikado_conf.tsv \
     --publish_dir     $RESULTS/slurm_run \
     --genome          $genome \

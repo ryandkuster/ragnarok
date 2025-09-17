@@ -36,7 +36,9 @@ process ENTAP_RUN {
 
     time 24.h
     cpus 20
-    memory 150.GB
+    memory { 150.GB * task.attempt }
+    errorStrategy 'retry'
+    maxRetries 1
 
     stageInMode 'copy'
 

@@ -2,8 +2,8 @@ process TRANSDECODER {
     label 'transdecoder'
     label 'campus'
 
-    time 2.h
-    cpus 4
+    time 8.h
+    cpus 12
     memory { 20.GB * task.attempt }
 
     errorStrategy 'retry'
@@ -34,9 +34,12 @@ process TRANSDECODER_ORF {
     label 'transdecoder'
     label 'short'
 
-    time 3.h
-    cpus 4
-    memory 20.GB
+    time 16.h
+    cpus 12
+    memory { 20.GB * task.attempt }
+
+    errorStrategy 'retry'
+    maxRetries 1
 
     input:
         tuple path(mk_gtf), path(mk_fasta)
