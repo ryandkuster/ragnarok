@@ -182,6 +182,25 @@ def confirm_nlr_status(df):
     return nlr_present
 
 
+def confirm_hx_um_status(df):
+    """
+    If user has mask_helixer == consensus, assert that no input gff for
+    hx_um id is present.
+    """
+    skip_hx_um = False if sys.argv[7] == "consensus" else True
+    hx_um_id = (df["id"] == "hx_um").any()
+    hx_um_present = df.loc[df["id"] == "hx_um", "file"].notna().any()
+
+    if hx_um_id:
+        assert skip_hx_um != True, f"hx_um id found and should be empty when params.mask_helixer == consensus"
+        assert hx_um_present != True, f"hx_um id found but reserved for use with params.mask_helixer, please rename id"
+
+    if not skip_hx_um:
+        assert hx_um_id == True, f"hx_um id needs to be defined in params.design"
+
+    return hx_um_present
+
+
 def write_existing(df):
     existing_files = df["file"].to_list()
 
@@ -193,7 +212,7 @@ def write_existing(df):
                 o.write(f"{i}\n")
 
 
-def adjust_names(df, st_present, hx_present, nlr_present, lo_present):
+def adjust_names(df, st_present, hx_present, nlr_present, lo_present, hx_um_present):
     """
     Once filepaths have been confirmed to exist or not, a table of all
     files as they will appear once symlinked to mikado2 process is
@@ -205,6 +224,8 @@ def adjust_names(df, st_present, hx_present, nlr_present, lo_present):
         df.loc[df["id"] == "mp", "file"] = "aa_miniprot.gff"
     if not hx_present:
         df.loc[df["id"] == "hx", "file"] = "helixer.gff3"
+    if not hx_um_present:
+        df.loc[df["id"] == "hx_um", "file"] = "helixer_um.gff3"
     if not lo_present:
         df.loc[df["id"] == "lo", "file"] = "liftoff.gff3"
     if not nlr_present:
@@ -224,8 +245,9 @@ def main():
     confirm_st_hx_status(st_present, hx_present)
     lo_present = confirm_lo_status(df)
     nlr_present = confirm_nlr_status(df)
+    hx_um_present = confirm_hx_um_status(df)
     write_existing(df)
-    df = adjust_names(df, st_present, hx_present, nlr_present, lo_present)
+    df = adjust_names(df, st_present, hx_present, nlr_present, lo_present, hx_um_present)
     df.to_csv("mikado.tsv", sep="\t", index=False, header=False)
 
 

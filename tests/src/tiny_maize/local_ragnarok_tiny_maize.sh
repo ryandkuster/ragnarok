@@ -14,7 +14,7 @@ protein=$DATA/tiny_maize/subset_Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.faa
 ill=$DATA/tiny_maize/fastq/
 
 nextflow  ../../../main.nf \
-    --design          ~/nextflow/ragnarok/assets/mikado_conf.tsv \
+    --design          ../../../assets/mikado_conf_consensus.tsv \
     --publish_dir     $RESULTS/local_run \
     --genome          $genome \
     --protein         $protein \
@@ -24,7 +24,10 @@ nextflow  ../../../main.nf \
     --skip_qc         false \
     --skip_trim       false \
     --nlrs            false \
-    --perform_masking true \
+    --mask_helixer    consensus \
+    --mask_protein    true \
+    --mask_rna        true \
+    --mask_tool       hite \
     --cds             $cds \
     -profile          local,eight \
     -resume

@@ -44,3 +44,30 @@ process HELIXER {
             --gff-output-path helixer.gff3
         """
 }
+
+process HELIXER_UM {
+    label 'helixer'
+    label 'gpu'
+
+    time 12.h
+    cpus 12
+    memory 10.GB
+
+    input:
+        path(genome)
+        path(model)
+        val(subseq_len)
+
+    output:
+        path("*.gff3"), emit: hx_um_ch
+
+    script:
+        """
+        Helixer.py \
+            --model-filepath $model \
+            --subsequence-length $subseq_len \
+            --fasta-path $genome \
+            --species helixer_species \
+            --gff-output-path helixer_um.gff3
+        """
+}

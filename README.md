@@ -35,7 +35,7 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
   - [output overview](#output-overview)
   - [detailed output example](#detailed-output-example)
 - [experimental features](#getting-started)
-  - [EDTA masking](#EDTA-masking)
+  - [masking](#masking)
   - [plant NLR annotation](#plant-NLR-annotation)
 - [tools used in ragnarok](#tools-used-in-ragnarok)
   - [tool images](#tool-images)
@@ -182,7 +182,8 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
     --iso             < path to directory that immediately contains all long read fastqs > \
-    --perform_masking < bool > \
+    --mask_helixer    < true or false or consensus > \
+    --mask_tool       < edta or hite > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
     --nlrs            < bool > \
@@ -234,7 +235,8 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
     --iso             < path to directory that immediately contains all long read fastqs > \
-    --perform_masking < bool > \
+    --mask_helixer    < true or false or consensus > \
+    --mask_tool       < edta or hite > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
     --nlrs            < bool > \
@@ -368,13 +370,16 @@ publish
 
 The following features are under development and work on many (but not all) systems.
 
-## EDTA masking
+## masking
 
 |parameter|type|description|
 |:-|:-|:-|
-|`--perform_masking`|bool|Run EDTA to mask input genome (recommended).|false|
-|`--masking_threshold`|int|Use with `perform_masking` to custom hard-mask TEanno models >= this length.|EDTA default is 1000bp|
-|`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
+|`--mask_tool`|edta or hite|Which tool to mask input genome (recommended).|edta|
+|`--mask_helixer`|true or false or consensus|Run helixer on masked,unmasked,consensus.|true|
+|`--mask_rna`|bool|Run rna alignment steps using masked genome.|true|
+|`--mask_protein`|bool|Run protein alignment steps using masked genome.|true|
+|`--mask_threshold`|int|Use with any masking tool to custom hard-mask TEanno models >= this length.|default is 1000bp|
+|`--cds`|.fna|CDS file for your species for use with `--mask_tool edta` (used by EDTA)|
 
 
 > [!NOTE]
@@ -559,6 +564,7 @@ flowchart TB
 - [FindPlantNLRs](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
 - [gffread](https://github.com/gpertea/gffread)
 - [Helixer](https://github.com/weberlab-hhu/Helixer)
+- [HiTE](https://github.com/CSU-KangHu/HiTE)
 - [Liftoff](https://github.com/agshumate/Liftoff)
 - [Mikado](https://mikado.readthedocs.io/en/stable/)
 - [minimap2](https://github.com/lh3/minimap2)
@@ -584,6 +590,7 @@ flowchart TB
 - findplantnlrs:docker://ryandk/findplantnlrs:latest
 - gffread:quay.io/biocontainers/gffread:0.12.7--h077b44d_6
 - helixer:docker://gglyptodon/helixer-docker:helixer_v0.3.4_cuda_12.2.2-cudnn8
+- hite:docker://kanghu/hite:3.3.3
 - liftoff:docker://quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_1
 - mikado2:docker://gemygk/mikado:v2.3.5rc2
 - minimap2:quay.io/biocontainers/minimap2:2.28--h577a1d6_4
