@@ -57,6 +57,7 @@ process THE_GRANDMASTER {
         path(dmnd)
         path(orfs)
         path(homology)
+        path(scoring)
         path(genome)
 
     output:

@@ -2,7 +2,7 @@ process SAM_SORT {
     label 'samtools'
     label 'campus'
 
-    time 2.h
+    time 6.h
     cpus 24
     memory 40.GB
 

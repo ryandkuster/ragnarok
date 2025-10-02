@@ -307,6 +307,7 @@ workflow {
                     DIAMOND.out.dmnd_ch,
                     TRANSDECODER_ORF.out.orf_ch,
                     params.homology,
+                    params.scoring,
                     mk_genome)
 
     GFFREAD_MIKADO(THE_GRANDMASTER.out.gm_ch,

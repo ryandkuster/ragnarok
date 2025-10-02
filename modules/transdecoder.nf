@@ -32,7 +32,7 @@ process TRANSDECODER {
 
 process TRANSDECODER_ORF {
     label 'transdecoder'
-    label 'short'
+    label 'campus'
 
     time 16.h
     cpus 12
