@@ -15,7 +15,7 @@
 
 Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using multiple lines of evidence.
 
-At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, isoseq long reads, or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
+At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, long reads (pacbio/ONT), or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
 <img src=assets/images/ragnarok_nobg.png width="275">
 
@@ -93,8 +93,9 @@ git clone https://github.com/ryandkuster/ragnarok
 |parameter|type|description|
 |:-|:-|:-|
 |`--genome`|.fna|Provide your assembly (ideally with *simple* names if using EDTA masking option).|
-|`--ill`|string|Required if `iso` not used. Path to a directory containing paired end fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in R1.[fq|fastq].gz .|
-|`--iso`|string|Required if `ill` not used. Path to a directory containing long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq|fastq].gz .|
+|`--ill`|string|Required if `pb` of `ont` not used. Path to a directory containing paired end fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in R1.[fq|fastq].gz .|
+|`--pb`|string|Required if `ill` not used. Path to a directory containing PacBio long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq|fastq].gz .|
+|`--ont`|string|Required if `ill` not used. Path to a directory containing ONT long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq|fastq].gz .|
 |`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
 |`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
 |`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
@@ -181,7 +182,7 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --cds             < path to cds fasta file > \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
-    --iso             < path to directory that immediately contains all long read fastqs > \
+    --pb              < path to directory that immediately contains all long read fastqs > \
     --perform_masking < bool > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
@@ -233,7 +234,7 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --cds             < path to cds fasta file > \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
-    --iso             < path to directory that immediately contains all long read fastqs > \
+    --pb              < path to directory that immediately contains all long read fastqs > \
     --perform_masking < bool > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
@@ -407,7 +408,7 @@ flowchart TB
     subgraph params
     v58["lineage"]
     v76["homology"]
-    v13["iso"]
+    v13["pb"]
     v82["entap_conf"]
     v19["minimum_length"]
     v0["design"]

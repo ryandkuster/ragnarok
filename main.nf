@@ -13,7 +13,8 @@ include { STAR_MAP                  } from "./modules/star.nf"
 include { SAM_SORT                  } from "./modules/samtools.nf"
 include { SAM_SORT as SAM_SORT_LONG } from "./modules/samtools.nf"
 include { SAM_INDEX                 } from "./modules/samtools.nf"
-include { MINIMAP2                  } from './modules/minimap2.nf'
+include { MINIMAP2_ONT              } from './modules/minimap2.nf'
+include { MINIMAP2_PB               } from './modules/minimap2.nf'
 
 // masking
 include { EDTA                      } from "./modules/edta.nf"
@@ -88,11 +89,17 @@ workflow {
     --------------------------------------------------------------------
     */
 
+    // Confirm pb and ont are not both defined
+    if (params.ont && params.pb) {
+        error "ERROR: --ont and --pb defined, but RAGNAROK can only accept one."
+    } else if (params.ont) {
+        long_ch = Channel.fromPath("${params.ont}*{fq,fastq}*", checkIfExists: true)
+    } else if (params.pb) {
+        long_ch = Channel.fromPath("${params.pb}*{fq,fastq}*", checkIfExists: true)
+    }
+
     if (params.ill) {
         fastq_ch = Channel.fromFilePairs("${params.ill}*_{R,}{1,2}*", checkIfExists: true, flat:true)
-    }
-    if (params.iso) {
-        long_ch = Channel.fromPath("${params.iso}*{fq,fastq}*", checkIfExists: true)
     }
 
     /*
@@ -192,12 +199,20 @@ workflow {
             "short")
     }
  
-    if (params.iso) {
-        MINIMAP2(
+    if (params.ont) {
+        MINIMAP2_ONT(
             st_genome,
             long_ch.collect())
         SAM_SORT_LONG(
-            MINIMAP2.out.mp_ch,
+            MINIMAP2_ONT.out.mp_ch,
+            "long")
+    }
+    if (params.pb) {
+        MINIMAP2_PB(
+            st_genome,
+            long_ch.collect())
+        SAM_SORT_LONG(
+            MINIMAP2_PB.out.mp_ch,
             "long")
     }
 
@@ -209,7 +224,7 @@ workflow {
 
     if (!params.skip_st) {
 
-        if (params.ill && params.iso){
+        if (params.ill && (params.ont || params.pb)) {
             STRINGTIE_MIX(
                 SAM_SORT.out.sort_ch,
                 SAM_SORT_LONG.out.sort_ch)
@@ -217,7 +232,7 @@ workflow {
         } else if (params.ill) {
             STRINGTIE(SAM_SORT.out.sort_ch)
             STRINGTIE.out.st_ch.set{ st_ch }
-        } else if (params.iso) {
+        } else if (params.ont || params.pb) {
             STRINGTIE(SAM_SORT_LONG.out.sort_ch)
             STRINGTIE.out.st_ch.set{ st_ch }
         }
