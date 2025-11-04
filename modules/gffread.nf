@@ -54,7 +54,7 @@ process GFFREAD_ENTAP {
     label 'gffread'
     label 'short'
 
-    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy", pattern: "*.entap_filtered.*")
+    publishDir(path: "${params.publish_dir}/publish/RAGNAROK", mode: "copy", pattern: "*.entap_filtered.*")
 
     time 3.h
     cpus 20

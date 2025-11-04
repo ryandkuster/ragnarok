@@ -6,7 +6,7 @@ process PARSE_INPUT {
     cpus 2
     memory 10.GB
 
-    publishDir "${publish_dir}/design", mode: 'copy'
+    publishDir "${params.publish_dir}/publish/design", mode: 'copy'
 
     input:
         path(design)

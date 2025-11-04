@@ -65,7 +65,7 @@ process ANNOTATENLRS {
 
     containerOptions "--bind ~ --bind FindPlantNLRs:/home/FindPlantNLRs/ --bind $ipscan:/home/interproscan --bind $genemark:/root/gmes_linux_64"
 
-    publishDir(path: "${publish_dir}/find_plant_nlrs", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/find_plant_nlrs", mode: "copy")
 
     time 12.h
     cpus 40

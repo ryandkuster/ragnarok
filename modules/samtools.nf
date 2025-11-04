@@ -6,7 +6,7 @@ process SAM_SORT {
     cpus 24
     memory 40.GB
 
-    publishDir(path: "${publish_dir}/alignments/sorted_bam", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/alignments/sorted_bam", mode: "copy")
 
     input:
         path(bam_ls)
@@ -96,7 +96,7 @@ process SAM_STATS {
     cpus 6
     memory 2.GB
 
-    publishDir(path: "${publish_dir}/qc/${outdir_name}", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/qc/${outdir_name}", mode: "copy")
 
     input:
         tuple val(sample), path(bam)

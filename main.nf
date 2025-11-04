@@ -49,7 +49,7 @@ include { BUSCO                     } from './modules/busco.nf'
 include { COMPLEASM                 } from './modules/compleasm.nf'
 include { COMPLEASM_DB              } from './modules/compleasm.nf'
 
-// find plant nlrs
+// liftover
 include { LIFTOFF                   } from './modules/liftover.nf'
 
 // find plant nlrs
@@ -57,7 +57,7 @@ include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
 
-// find plant nlrs
+// entap
 include { ENTAP_INI                 } from './modules/entap.nf'
 include { ENTAP_RUN                 } from './modules/entap.nf'
 
@@ -334,12 +334,19 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    ENTAP_INI(params.entap_conf,
-              params.entap_run)
     PROT_FIX(GFFREAD_MIKADO.out.final_ch)
-    ENTAP_RUN(ENTAP_INI.out.conf_ch,
-              ENTAP_INI.out.run_ch,
-              ENTAP_INI.out.db_ch,
+
+    if (params.entap_db) {
+        entap_db = file(params.entap_db, checkIfExists: true)
+    } else {
+        ENTAP_INI(params.entap_conf,
+                  params.entap_run)
+        ENTAP_INI.out.db_ch.set{ entap_db }
+    }
+
+    ENTAP_RUN(params.entap_conf,
+              params.entap_run,
+              entap_db,
               PROT_FIX.out.prot_ch)
 
     AGAT_SUBSET(THE_GRANDMASTER.out.gm_ch,

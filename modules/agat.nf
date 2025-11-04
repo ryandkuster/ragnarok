@@ -2,7 +2,7 @@ process AGAT_SUBSET {
     label 'agat'
     label 'short'
 
-    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy", pattern: "*.entap*.gff3")
+    publishDir(path: "${params.publish_dir}/publish/RAGNAROK", mode: "copy", pattern: "*.entap*.gff3")
 
     time 3.h
     cpus 20
