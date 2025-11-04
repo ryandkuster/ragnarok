@@ -6,7 +6,7 @@ process MULTIQC {
     cpus 6
     memory 2.GB
 
-    publishDir(path: "${publish_dir}/qc/${outdir_name}", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/qc/${outdir_name}", mode: "copy")
 
     input:
         path('*')

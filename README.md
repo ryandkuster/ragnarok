@@ -17,6 +17,8 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, long reads (pacbio/ONT), or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
+For more information and benchmarking, see the [RAGNAROK pre-print]().
+
 <img src=assets/images/ragnarok_nobg.png width="275">
 
 ## contents
@@ -49,35 +51,7 @@ At its core, ragnarok performs alignments of RNA evidence in the form of illumin
 
 Ragnarok is built for LINUX-based systems and relies on **Nextflow** and **Apptainer** (FKA Singularity). Both must be installed and available in your working environment prior to use.
 
-Nextflow installation routes:
-- [Nextflow quick install guide](https://www.nextflow.io/docs/latest/getstarted.html) (requires Java)
-- [Nextflow conda image](https://anaconda.org/bioconda/nextflow) (requires Anaconda)
-
-Assuming your machine is set up with the appropriate prerequisite Java version and you have permissions to do so, installing nextflow can be accomplished as follows:
-
-```bash
-mkdir -p ~/bin && cd ~/bin # optional location for binary
-curl -s https://get.nextflow.io | bash
-chmod +x nextflow
-```
-
-Apptainer installation routes:
-- [Apptainer quick install](https://apptainer.org/docs/user/latest/quick_start.html#quick-installation)
-- [Apptainer binary](https://apptainer.org/docs/admin/1.2/installation.html) See "Install unprivileged from pre-built binaries".
-- we recommend against using the conda package for singularity (v3.8.7) as it is quite dated and has been found to have unintended behaviors.
-
-A possible route to installing the `unprivileged` version of Apptainer might go something like this on your system:
-
-```bash
-mkdir -p ~/bin && cd ~/bin # optional location for binary
-curl -s https://raw.githubusercontent.com/apptainer/apptainer/main/tools/install-unprivileged.sh | bash -s - ~/
-```
-
-Add the following to your `.bashrc`, then run `source ~/.bashrc` to allow executables for nextflow and apptainer to be used anywhere on your system:
-
-```bash
-export PATH="$HOME/bin:$PATH"
-```
+See the wiki on [Installing Nextflow and Apptainer](https://github.com/ryandkuster/ragnarok/wiki/Installing-Nextflow-and-Apptainer) for more information.
 
 Ragnarok is publicly available through [its github page](https://github.com/ryandkuster/ragnarok).
 
@@ -152,6 +126,7 @@ reference.gff3	at	True	5	True	False
 |`--minimum_length`|int|Use with `--skip_trim`, minimum length read to keep when adapter trimming.|50|
 |`--skip_st`|bool|Requires st, tr, mp gff files locally (in `--design` file), bypass Stringtie steps.|false|
 |`--skip_hx`|bool|Requires hx file locally (in `--design` file), bypass Helixer step.|false|
+|`--entap_db`|directory|[Entap pre-configured database](https://github.com/ryandkuster/ragnarok/wiki/Set-up-a-persistent-EnTAP-database)|false|
 |`--entap_run`|.params file|Entap config defining databases and contaminants.|assets/template_entap_config.ini (plants))|
 |`--busco_db`|str|Desired BUSCO dataset from BUSCO v5.8.1 and above.|"embryophyta_odb12"|
 |`--final_prefix`|str|File prefix for final files in RAGNAROK publish directory|"ragnarok"|

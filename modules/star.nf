@@ -34,7 +34,7 @@ process STAR_MAP {
     cpus 40
     memory 50.GB
 
-    publishDir(path: "${publish_dir}/alignments/star", mode: "symlink")
+    publishDir(path: "${params.publish_dir}/publish/alignments/star", mode: "symlink")
 
     input:
         tuple val(sample), path(r1), path(r2)

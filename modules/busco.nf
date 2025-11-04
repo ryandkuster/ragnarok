@@ -6,7 +6,7 @@ process BUSCO {
     cpus 20
     memory 40.GB
 
-    publishDir(path: "${publish_dir}/RAGNAROK", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/RAGNAROK", mode: "copy")
   
     input:
         tuple path(entap_transcripts), path(entap_proteins)

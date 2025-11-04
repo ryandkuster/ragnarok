@@ -6,7 +6,7 @@ process FASTP_ADAPTERS {
     cpus 6
     memory 20.GB
 
-    publishDir(path: "${publish_dir}/cutadapt", mode: "symlink")
+    publishDir(path: "${params.publish_dir}/publish/cutadapt", mode: "symlink")
 
     input:
         tuple val(sample), path(r1), path(r2)

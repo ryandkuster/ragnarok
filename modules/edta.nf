@@ -6,7 +6,7 @@ process EDTA {
     cpus 24
     memory 100.GB
 
-    publishDir(path: "${publish_dir}/edta_masking", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/edta_masking", mode: "copy")
 
     input:
         path(genome)
@@ -41,7 +41,7 @@ process EDTA_THRESHOLD {
     cpus 24
     memory 10.GB
 
-    publishDir(path: "${publish_dir}/edta_masking", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/edta_masking", mode: "copy")
 
     input:
         path("*")
