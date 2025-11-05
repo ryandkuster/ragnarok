@@ -17,7 +17,7 @@ Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using mu
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, long reads (pacbio/ONT), or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
-For more information and benchmarking, see the [RAGNAROK pre-print]().
+For more information and benchmarking, see the [RAGNAROK pre-print](https://www.biorxiv.org/content/10.1101/2025.10.03.680343v1.abstract).
 
 <img src=assets/images/ragnarok_nobg.png width="275">
 
