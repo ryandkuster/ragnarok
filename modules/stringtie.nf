@@ -2,9 +2,9 @@ process STRINGTIE {
     label 'stringtie'
     label 'campus'
 
-    time 2.h
+    time 24.h
     cpus 24
-    memory 80.GB
+    memory 150.GB
 
     input:
         path(bam)
@@ -25,9 +25,9 @@ process STRINGTIE_MIX {
     label 'stringtie'
     label 'campus'
 
-    time 2.h
+    time 24.h
     cpus 24
-    memory 80.GB
+    memory 150.GB
 
     input:
         path(bam_ill)
