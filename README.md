@@ -1,25 +1,24 @@
-# Ragnarok!
+# `RAGNAROK`: `RA`pid `G`e`N`e `A`nnotation (`RO`c`K`s) 
 
 ![GitHub release](https://img.shields.io/github/v/release/ryandkuster/ragnarok)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ryandkuster/ragnarok?include_prereleases)
 ![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.0-23aa62.svg?labelColor=000000)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+***
 
-```
-################################################################################
-#                                   RAGNAROK!                                  #
-#                         RApid Genome anNotAtion ROcKs!                       #
-################################################################################
-```
+<img src=assets/images/ragnarok_nobg.png align="left" width="250" alt="Ragnarok Logo">
 
-Ragnarok is a nextflow-implemented pipeline for rapid genome annotation using multiple lines of evidence.
+RAGNAROK is a nextflow-implemented pipeline for rapid genome annotation using multiple lines of evidence.
 
 At its core, ragnarok performs alignments of RNA evidence in the form of illumina short reads, long reads (pacbio/ONT), or a combination of the two. Protein alignments are then performed against likely coding sequences. Helixer-predicted genes are combined with all RNA and protein-based models (as well as any user-supplied existing annotations) and selectively filtered by Mikado for the best transcript models at overlapping loci.
 
+
 For more information and benchmarking, see the [RAGNAROK pre-print](https://www.biorxiv.org/content/10.1101/2025.10.03.680343v1.abstract).
 
-<img src=assets/images/ragnarok_nobg.png width="275">
+<br>
+
+***
 
 ## contents
 
