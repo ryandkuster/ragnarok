@@ -56,6 +56,7 @@ include { LIFTOFF                   } from './modules/liftover.nf'
 include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
+include { PSAURON                   } from './modules/psauron.nf'
 
 // entap
 include { ENTAP_INI                 } from './modules/entap.nf'
@@ -371,4 +372,12 @@ workflow {
               params.busco_db,
               params.final_prefix)
 
+    /*
+    --------------------------------------------------------------------
+        PSAURON quality metric
+    --------------------------------------------------------------------
+    */
+
+    PSAURON(GFFREAD_ENTAP.out.final_ch,
+            params.final_prefix)
 }
