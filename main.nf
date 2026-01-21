@@ -48,6 +48,7 @@ include { AGAT_SUBSET               } from './modules/agat.nf'
 include { BUSCO                     } from './modules/busco.nf'
 include { COMPLEASM                 } from './modules/compleasm.nf'
 include { COMPLEASM_DB              } from './modules/compleasm.nf'
+include { PSAURON                   } from './modules/psauron.nf'
 
 // liftover
 include { LIFTOFF                   } from './modules/liftover.nf'
@@ -56,7 +57,6 @@ include { LIFTOFF                   } from './modules/liftover.nf'
 include { FPNLRS_SETUP              } from './modules/findplantnlrs.nf'
 include { FINDPLANTNLRS             } from './modules/findplantnlrs.nf'
 include { ANNOTATENLRS              } from './modules/findplantnlrs.nf'
-include { PSAURON                   } from './modules/psauron.nf'
 
 // entap
 include { ENTAP_INI                 } from './modules/entap.nf'
