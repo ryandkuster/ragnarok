@@ -18,8 +18,8 @@ process PSAURON {
     script:
         """
         psauron \
-            -i $entap_proteins \
             -p \
+            -i $entap_proteins \
             -o ${final_prefix}.entap_filtered.proteins.psauron.txt
         """
 }
