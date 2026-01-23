@@ -48,6 +48,7 @@ include { AGAT_SUBSET               } from './modules/agat.nf'
 include { BUSCO                     } from './modules/busco.nf'
 include { COMPLEASM                 } from './modules/compleasm.nf'
 include { COMPLEASM_DB              } from './modules/compleasm.nf'
+include { PSAURON                   } from './modules/psauron.nf'
 
 // liftover
 include { LIFTOFF                   } from './modules/liftover.nf'
@@ -371,4 +372,12 @@ workflow {
               params.busco_db,
               params.final_prefix)
 
+    /*
+    --------------------------------------------------------------------
+        PSAURON quality metric
+    --------------------------------------------------------------------
+    */
+
+    PSAURON(GFFREAD_ENTAP.out.final_ch,
+            params.final_prefix)
 }
