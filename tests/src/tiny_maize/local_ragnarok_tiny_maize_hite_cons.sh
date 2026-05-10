@@ -16,7 +16,7 @@ ill=$DATA/tiny_maize/fastq/
 RAG="${PWD%/*/*/*}"
 
 nextflow  ../../../main.nf \
-    --design          $RAG/assets/mikado_conf.tsv \
+    --design          $RAG/assets/mikado_conf_consensus.tsv \
     --scoring         $RAG/assets/plant_microexon_filter.yaml \
     --publish_dir     $RESULTS/local_run/mask_cons_hite \
     --genome          $genome \
