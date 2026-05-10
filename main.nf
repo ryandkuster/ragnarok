@@ -19,6 +19,8 @@ include { MINIMAP2_PB               } from './modules/minimap2.nf'
 // masking
 include { EDTA                      } from "./modules/edta.nf"
 include { EDTA_THRESHOLD            } from "./modules/edta.nf"
+include { HITE                      } from "./modules/hite.nf"
+include { HITE_THRESHOLD            } from "./modules/edta.nf"
 
 // main annotations
 include { STRINGTIE                 } from "./modules/stringtie.nf"
@@ -28,12 +30,14 @@ include { TRANSDECODER              } from "./modules/transdecoder.nf"
 include { MINIPROT                  } from "./modules/miniprot.nf"
 include { HELIXER                   } from "./modules/helixer.nf"
 include { HELIXER_DB                } from "./modules/helixer.nf"
+include { HELIXER_UM                } from "./modules/helixer.nf"
 
 // intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
 include { SCAF2NUM                  } from './modules/parse_input.nf'
 include { NUM2SCAF as NUM2SCAF_1    } from './modules/parse_input.nf'
 include { NUM2SCAF as NUM2SCAF_2    } from './modules/parse_input.nf'
+include { NUM2SCAF_GFF              } from './modules/parse_input.nf'
 include { NOZIP_REF                 } from './modules/parse_input.nf'
 include { PROT_FIX                  } from './modules/parse_input.nf'
 include { MIKADO_CONF               } from "./modules/mikado2.nf"
@@ -64,6 +68,29 @@ include { ENTAP_RUN                 } from './modules/entap.nf'
 
 workflow {
 
+log.info """
+=======================================================================
+             ____ ____ ____ _  _ ____ ____ ____ _  _ 
+             |__/ |__| | __ |\\ | |__| |__/ |  | |_/  
+             |  \\ |  | |__] | \\| |  | |  \\ |__| | \\_ 
+                                     
+=======================================================================
+
+    VERSION:
+      ${workflow.manifest.version}
+  
+    PUBLISH DIRECTORY:
+      ${params.publish_dir}
+  
+    MASKING SETTINGS:
+      mask_rna     : ${params.mask_rna}
+      mask_protein : ${params.mask_protein}
+      mask_helixer : ${params.mask_helixer}
+      mask_tool    : ${params.mask_tool}
+
+=======================================================================
+"""
+
     /*
     --------------------------------------------------------------------
         parse user design and gather input gffs
@@ -75,7 +102,8 @@ workflow {
                 params.skip_hx,
                 params.nlrs,
                 params.lo_genome,
-                params.lo_gff)
+                params.lo_gff,
+                params.mask_helixer)
 
     PARSE_INPUT.out.path_ch
         .splitCsv( header: false, sep: ',' )
@@ -138,43 +166,84 @@ workflow {
     --------------------------------------------------------------------
     */
 
-    if (params.perform_masking == true) {
-        // Rename the input fastas with simple naming scheme.
-        SCAF2NUM(
-            params.genome,
-            params.cds)
+    if (params.mask_helixer != false || params.mask_rna != false || params.mask_protein != false) {
+        // Create a masked genome
 
-        // Perform masking of repetitive regions.
-        EDTA(
-            SCAF2NUM.out.s2n_ref_ch,
-            SCAF2NUM.out.s2n_cds_ch)
+        if (params.mask_tool == "edta") {
+            // Rename the input fastas with simple naming scheme.
+            SCAF2NUM(
+                params.genome,
+                params.cds)
 
-        // Convert the EDTA hard-masked fasta to original naming scheme.
-        NUM2SCAF_1(
-            EDTA.out.mask_ch,
-            SCAF2NUM.out.s2n_json_ch)
-
-        // Use the EDTA hard-masked genome for stringtie steps.
-        NUM2SCAF_1.out.n2s_ref_ch.set{ st_genome }
-
-        // Optionally, allow a custom TE anno size (default 1kb) to
-        // allow more or less stringency for helixer annotations.
-        if (params.masking_threshold != false) {
-            EDTA_THRESHOLD(
-                EDTA.out.edta_ch,
+            // Perform masking of repetitive regions.
+            EDTA(
                 SCAF2NUM.out.s2n_ref_ch,
-                params.masking_threshold)
-            NUM2SCAF_2(
-                EDTA_THRESHOLD.out.threshold_ch,
+                SCAF2NUM.out.s2n_cds_ch)
+
+            // Convert the EDTA hard-masked fasta to original naming scheme.
+            NUM2SCAF_1(
+                EDTA.out.mask_ch,
                 SCAF2NUM.out.s2n_json_ch)
-            NUM2SCAF_2.out.n2s_ref_ch.set{ hx_genome }
+
+            // Convert the EDTA gff3 files to original naming scheme.
+            NUM2SCAF_GFF(
+                EDTA.out.edta_ch,
+                SCAF2NUM.out.s2n_json_ch)
+
+            // Optionally, allow a custom TE anno size (default 1kb) to
+            // allow more or less stringency for helixer annotations.
+            if (params.mask_threshold != false) {
+                EDTA_THRESHOLD(
+                    EDTA.out.edta_ch,
+                    SCAF2NUM.out.s2n_ref_ch,
+                    params.mask_threshold)
+                NUM2SCAF_2(
+                    EDTA_THRESHOLD.out.threshold_ch,
+                    SCAF2NUM.out.s2n_json_ch)
+                NUM2SCAF_2.out.n2s_ref_ch.set{ mask_genome }
+            } else {
+                NUM2SCAF_1.out.n2s_ref_ch.set{ mask_genome }
+            }
+
+        } else if (params.mask_tool == "hite") {
+            HITE(params.genome)
+
+            if (params.mask_threshold != false) {
+                HITE_THRESHOLD(
+                    HITE.out.hite_ch,
+                    params.genome,
+                    params.mask_threshold)
+            } else {
+                HITE_THRESHOLD(
+                    HITE.out.hite_ch,
+                    params.genome,
+                    1000)
+            }
+            HITE_THRESHOLD.out.threshold_ch.set{ mask_genome }
+        }
+
+        if (params.mask_helixer == false) {
+            hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         } else {
-            NUM2SCAF_1.out.n2s_ref_ch.set{ hx_genome }
+            hx_genome = mask_genome
+        }
+
+        if (params.mask_rna == true) {
+            st_genome = mask_genome
+        } else {
+            st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        }
+
+        if (params.mask_protein == true) {
+            mp_genome = mask_genome
+        } else {
+            mp_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         }
 
     } else {
-        st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        mp_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
     }
 
     /*
@@ -245,7 +314,7 @@ workflow {
                      st_genome)
  
         MINIPROT(TRANSDECODER.out.tr_ch,
-                 st_genome,
+                 mp_genome,
                  params.protein)
 
         st_gff = GFFREAD.out.st_gff_ch
@@ -260,6 +329,13 @@ workflow {
                 params.subseq_len)
 
         hx_gff = HELIXER.out.hx_ch
+
+        if (params.mask_helixer == "consensus") {
+            HELIXER_UM(Channel.fromPath("${params.genome}", checkIfExists: true),
+                       HELIXER_DB.out.db_ch,
+                       params.subseq_len)
+            hx_um_gff = HELIXER_UM.out.hx_um_ch
+        }
     }
 
     if (params.skip_hx == false && params.skip_st == false) {
@@ -270,6 +346,10 @@ workflow {
         gff_path_ch.concat(st_gff, tr_gff, mp_gff).set{ all_gff_ch }
     } else if (params.skip_hx == true && params.skip_st == true) {
         gff_path_ch.set{ all_gff_ch }
+    }
+
+    if (params.mask_helixer == "consensus") {
+        all_gff_ch = all_gff_ch.concat(hx_um_gff)
     }
 
     /*

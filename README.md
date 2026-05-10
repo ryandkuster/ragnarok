@@ -36,7 +36,7 @@ For more information and benchmarking, see the [RAGNAROK pre-print](https://www.
   - [output overview](#output-overview)
   - [detailed output example](#detailed-output-example)
 - [experimental features](#getting-started)
-  - [EDTA masking](#EDTA-masking)
+  - [masking](#masking)
   - [plant NLR annotation](#plant-NLR-annotation)
 - [tools used in ragnarok](#tools-used-in-ragnarok)
   - [tool images](#tool-images)
@@ -157,7 +157,8 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
     --pb              < path to directory that immediately contains all long read fastqs > \
-    --perform_masking < bool > \
+    --mask_helixer    < true or false or consensus > \
+    --mask_tool       < edta or hite > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
     --nlrs            < bool > \
@@ -209,7 +210,8 @@ nextflow run ~/nextflow/ragnarok/main.nf \
     --protein         < path to protein (aa) fasta file > \
     --ill             < path to directory that immediately contains all R1/R2 fastqs > \
     --pb              < path to directory that immediately contains all long read fastqs > \
-    --perform_masking < bool > \
+    --mask_helixer    < true or false or consensus > \
+    --mask_tool       < edta or hite > \
     --skip_qc         < bool > \
     --skip_trim       < bool > \
     --nlrs            < bool > \
@@ -274,16 +276,19 @@ Upon completion of the pipeline, the defined publish directory (`--publish_dir`)
 
 ```
 publish
-├── RAGNAROK           (final output files and associated sequences/summaries)
 ├── alignments
 │   ├── sorted_bam
 │   └── star
 ├── design             (relevant metadata from user input)
 ├── entap
 │   └── entap_outfiles (EnTAP output directory with functional annotations)
+├── fastp
+├── masking            (masking gff and related output)
 ├── mikado
 │   ├── mikado_in      (gff files and configuration/scoring used as input)
 │   └── mikado_out     (the raw output of mikado)
+├── qc
+├── RAGNAROK           (final output files and associated sequences/summaries)
 └── summary            (nextflow reports on run)
 ```
 
@@ -291,13 +296,6 @@ publish
 
 ```
 publish
-├── RAGNAROK/
-│   ├── ragnarok.entap_filtered.busco_embryophyta_odb12.txt
-│   ├── ragnarok.entap_filtered.compleasm_embryophyta_odb12.txt
-│   ├── ragnarok.entap_filtered.gff3
-│   ├── ragnarok.entap_filtered.proteins.faa
-│   ├── ragnarok.entap_filtered.transcripts.fna
-│   └── ragnarok.entap_no_annotation.gff3
 ├── alignments/
 │   ├── sorted_bam/
 │   │   └── short_sorted_merged.bam
@@ -307,14 +305,14 @@ publish
 │       ├── CB_N_B_T1Log.out -> <symlink>
 │       ├── CB_N_B_T1Log.progress.out -> <symlink>
 │       └── star_CB_N_B_T1.out -> <symlink>
-├── cutadapt
 ├── design/
 │   ├── gff_paths.csv
 │   └── mikado.tsv
-├── edta_masking
 ├── entap/
 │   └── entap_outfiles/
 │       └── final_results/
+├── fastp
+├── masking
 ├── mikado/
 │   ├── mikado_in/
 │   │   ├── configuration.yaml
@@ -331,7 +329,13 @@ publish
 ├── qc/
 │   ├── raw/
 │   └── trimmed/:w
-
+├── RAGNAROK/
+│   ├── ragnarok.entap_filtered.busco_embryophyta_odb12.txt
+│   ├── ragnarok.entap_filtered.compleasm_embryophyta_odb12.txt
+│   ├── ragnarok.entap_filtered.gff3
+│   ├── ragnarok.entap_filtered.proteins.faa
+│   ├── ragnarok.entap_filtered.transcripts.fna
+│   └── ragnarok.entap_no_annotation.gff3
 └── summary/
     ├── 2025-08-14_15-15_dag.html
     ├── 2025-08-14_15-15_report.html
@@ -343,13 +347,17 @@ publish
 
 The following features are under development and work on many (but not all) systems.
 
-## EDTA masking
+## masking
 
-|parameter|type|description|
-|:-|:-|:-|
-|`--perform_masking`|bool|Run EDTA to mask input genome (recommended).|false|
-|`--masking_threshold`|int|Use with `perform_masking` to custom hard-mask TEanno models >= this length.|EDTA default is 1000bp|
-|`--cds`|.fna|CDS file for your species for use with `--perform_masking true` (used by EDTA)|
+|parameter|type|description|default|
+|:-|:-|:-|:-|
+|`--perform_masking`|bool|Setting `false` disables all masking regardless of individual `mask_*` params (see below).|true|
+|`--mask_tool`|edta or hite|Which tool to use to mask the input genome.|edta|
+|`--mask_helixer`|true or false or consensus|Run Helixer on masked genome (`true`), unmasked genome (`false`), or both and combine (`consensus`).|true|
+|`--mask_rna`|bool|Run RNA alignment steps using the masked genome.|true|
+|`--mask_protein`|bool|Run protein alignment steps using the masked genome.|true|
+|`--mask_threshold`|int|Use with any masking tool to custom hard-mask TE annotation models >= this length (bp).|1000|
+|`--cds`|.fna|CDS file for your species, required when using `--mask_tool edta` (used by EDTA).||
 
 
 > [!NOTE]
@@ -389,7 +397,7 @@ flowchart TB
     v53["protein"]
     v60["subseq_len"]
     v83["entap_run"]
-    v24["perform_masking"]
+    v24["mask_tool"]
     v39["max_intron"]
     v90["busco_db"]
     v75["scoring"]
@@ -534,6 +542,7 @@ flowchart TB
 - [FindPlantNLRs](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
 - [gffread](https://github.com/gpertea/gffread)
 - [Helixer](https://github.com/weberlab-hhu/Helixer)
+- [HiTE](https://github.com/CSU-KangHu/HiTE)
 - [Liftoff](https://github.com/agshumate/Liftoff)
 - [Mikado](https://mikado.readthedocs.io/en/stable/)
 - [minimap2](https://github.com/lh3/minimap2)
@@ -559,6 +568,7 @@ flowchart TB
 - findplantnlrs:docker://ryandk/findplantnlrs:latest
 - gffread:quay.io/biocontainers/gffread:0.12.7--h077b44d_6
 - helixer:docker://gglyptodon/helixer-docker:helixer_v0.3.4_cuda_12.2.2-cudnn8
+- hite:docker://kanghu/hite:3.3.3
 - liftoff:docker://quay.io/biocontainers/liftoff:1.6.3--pyhdfd78af_1
 - mikado2:docker://gemygk/mikado:v2.3.5rc2
 - minimap2:quay.io/biocontainers/minimap2:2.28--h577a1d6_4

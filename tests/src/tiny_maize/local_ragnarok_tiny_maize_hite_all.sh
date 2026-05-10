@@ -18,7 +18,7 @@ RAG="${PWD%/*/*/*}"
 nextflow  ../../../main.nf \
     --design          $RAG/assets/mikado_conf.tsv \
     --scoring         $RAG/assets/plant_microexon_filter.yaml \
-    --publish_dir     $RESULTS/local_run/default \
+    --publish_dir     $RESULTS/local_run/mask_all_hite \
     --genome          $genome \
     --protein         $protein \
     --ill             $ill \
@@ -27,9 +27,13 @@ nextflow  ../../../main.nf \
     --skip_qc         false \
     --skip_trim       false \
     --nlrs            false \
-    --perform_masking true \
+    --mask_tool       hite \
+    --mask_protein    true \
+    --mask_helixer    true \
+    --mask_rna        true \
     --cds             $cds \
     --entap_db        $DATA/db/entap_db \
+    --final_prefix    mask_all_hite \
     -profile          local,eight \
     -resume
 

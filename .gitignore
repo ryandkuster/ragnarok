@@ -1,3 +1,4 @@
 tests/results
-tests/src/.nextflow*
+tests/data/db/entap_db
+tests/src/tiny_maize/.nextflow*
 assets/gmes_linux_64

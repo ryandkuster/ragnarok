@@ -16,9 +16,9 @@ ill=$DATA/tiny_maize/fastq/
 RAG="${PWD%/*/*/*}"
 
 nextflow  ../../../main.nf \
-    --design          $RAG/assets/mikado_conf.tsv \
+    --design          $RAG/assets/mikado_conf_consensus.tsv \
     --scoring         $RAG/assets/plant_microexon_filter.yaml \
-    --publish_dir     $RESULTS/local_run/default \
+    --publish_dir     $RESULTS/local_run/helixer_cons_edta \
     --genome          $genome \
     --protein         $protein \
     --ill             $ill \
@@ -27,9 +27,13 @@ nextflow  ../../../main.nf \
     --skip_qc         false \
     --skip_trim       false \
     --nlrs            false \
-    --perform_masking true \
+    --mask_tool       edta \
+    --mask_protein    false \
+    --mask_helixer    consensus \
+    --mask_rna        false \
     --cds             $cds \
     --entap_db        $DATA/db/entap_db \
+    --final_prefix    cons_edta \
     -profile          local,eight \
     -resume
 

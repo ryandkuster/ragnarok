@@ -15,6 +15,7 @@ process PARSE_INPUT {
         val(nlrs)
         val(lo_genome)
         val(lo_gff)
+        val(mask_hx)
 
     output:
         path 'mikado.tsv', emit: design_ch
@@ -28,7 +29,8 @@ process PARSE_INPUT {
             $skip_hx \
             $nlrs \
             $lo_genome \
-            $lo_gff
+            $lo_gff \
+            $mask_hx
         """
 }
 
@@ -109,6 +111,36 @@ process NUM2SCAF {
             $s2n_genome \
             num2scaf_genome.fna \
             s2n_ref.json
+        """
+}
+
+process NUM2SCAF_GFF {
+    label 'pandas'
+    label 'short'
+
+    time 12.m
+    cpus 2
+    memory 10.GB
+
+    publishDir(path: "${params.publish_dir}/publish/masking", mode: "copy")
+
+    input:
+        path(edta_ch)
+        path(s2n_json)
+
+    output:
+        path '*_renamed.gff3', emit: n2s_rename
+
+    script:
+        """
+        for gff in *.gff3 ; do
+            base_gff=\${gff%%.gff3}
+
+            number_to_scaffold_gff.py \
+                --gff \$gff \
+                --out_gff \${base_gff}_renamed.gff3 \
+                --json s2n_ref.json
+        done
         """
 }
 

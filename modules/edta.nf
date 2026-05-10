@@ -6,7 +6,7 @@ process EDTA {
     cpus 24
     memory 100.GB
 
-    publishDir(path: "${params.publish_dir}/publish/edta_masking", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/masking", mode: "copy")
 
     input:
         path(genome)
@@ -33,6 +33,32 @@ process EDTA {
         """
 }
 
+process HITE_THRESHOLD {
+    label 'bedtools'
+    label 'short'
+
+    time 3.h
+    cpus 24
+    memory 10.GB
+
+    publishDir(path: "${params.publish_dir}/publish/masking", mode: "copy")
+
+    input:
+        path("*")
+        path(genome)
+        val(threshold)
+
+    output:
+        path("custom.masked.fna"), emit: threshold_ch
+
+    script:
+        """
+        grep -v "^#" HiTE.gff > no_hash.HiTE.gff3
+        awk -F'\t' 'NR==1 || (\$5 - \$4) >= $threshold' no_hash.HiTE.gff3 > filtered.HiTE.gff3
+        bedtools maskfasta -fi $genome -bed filtered.HiTE.gff3 -fo custom.masked.fna
+        """
+}
+
 process EDTA_THRESHOLD {
     label 'bedtools'
     label 'short'
@@ -41,7 +67,7 @@ process EDTA_THRESHOLD {
     cpus 24
     memory 10.GB
 
-    publishDir(path: "${params.publish_dir}/publish/edta_masking", mode: "copy")
+    publishDir(path: "${params.publish_dir}/publish/masking", mode: "copy")
 
     input:
         path("*")
