@@ -4,7 +4,7 @@ process FASTQC {
 
     time 12.h
     cpus 6
-    memory 2.GB
+    memory 10.GB
 
     publishDir(path: "${params.publish_dir}/publish/qc/${outdir_name}", mode: "copy")
 
