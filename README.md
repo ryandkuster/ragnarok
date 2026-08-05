@@ -71,8 +71,11 @@ git clone https://github.com/ryandkuster/ragnarok
 |`--ont`|string|Nanopore RNA data. Required if `ill` or `pb` not used. Path to a directory containing ONT RNA long read fastq files. Can end with directory name (Ex: path/to/files/) or a specific prefix of the paired files (Ex: path/to/files/reads_P1). Using specific prefix name will search for the paired end read files ending in [fq|fastq].gz .|
 |`--protein`|.faa|Protein file for miniprot (e.g., closest ref species).|
 |`--homology`|.faa|Mikado protein homology file (e.g., [uniprot 33090 for viridiplantae](https://www.uniprot.org/uniprotkb?query=viridiplantae&facets=reviewed%3Atrue)).|
-|`--scoring`|.yaml|Mikado scoring file (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)).|
+|`--scoring`|.yaml|Mikado scoring file; recommended file: `/assets/plant_microexon_filter.yaml` (see note below).|
 |`--design`|.tsv|Mikado configuration table file (see Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) and below).|
+
+> [!NOTE]
+> _Helixer is known to produce a biologically unrealistic number of microexon-containing gene models. We mitigate this behavior by introducing a weighted penalty against microexon-containing gene models in Mikado to improve ab initio annotation via 'plant_microexon_filter.yaml. Users may use pre-existing Helixer models without microexon penalty (e.g., [plant.yaml](https://github.com/EI-CoreBioinformatics/mikado/tree/master/Mikado/configuration/scoring_files)), but note that some protein models may be affected by microexons in predictions._
 
 The mikado2 stage of the pipeline requires a configuration table to weigh the input gene models and give model priority. For this `--design` input, Ragnarok has the mandatory fields (`hx`, `st`, `mp`, `tr`) for the helixer, stringtie, miniprot, and transdecoder models produced along the way. Users should leave the file field blank if they are to be performed in the pipeline, but all other fields should be present. 
 
