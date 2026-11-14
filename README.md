@@ -44,7 +44,8 @@ For more information and benchmarking, see the [RAGNAROK Paper](https://acsess.o
 # requirements
 
 ## software prerequisites
-**nextflow** (22.10.4+)  
+**nextflow** (22.10.4+ and <26.XX.X) - See [Issue #43](https://github.com/ryandkuster/ragnarok/issues/43) for additional details on nextflow versioning.
+
 **apptainer** (1.1.8+)
 
 Ragnarok is built for LINUX-based systems and relies on **Nextflow** and **Apptainer** (FKA Singularity). Both must be installed and available in your working environment prior to use.
