@@ -152,6 +152,9 @@ SCRATCHDIR= <path>
 
 Below is a sample script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
 
+> [!NOTE]
+> _Additional spaces between variable names and file/directory paths are included for readability only. Additional spaces should be removed in your final script._
+
 ```
 nextflow run ~/nextflow/ragnarok/main.nf \
     --publish_dir     < path to results location > \
@@ -187,6 +190,9 @@ apptainer --version
 ```
 
 Below is a sample sbatch script to run the pipeline. You'll need to replace the `<>` values with those that make sense for your use case.
+
+> [!NOTE]
+> _Additional spaces between variable names and file/directory paths are included for readability only. Additional spaces should be removed in your final script._
 
 ```
 #!/bin/bash
