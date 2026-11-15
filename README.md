@@ -81,13 +81,14 @@ The mikado2 stage of the pipeline requires a configuration table to weigh the in
 
 The fields in this file are `file location`, `alias`, `strand-specific`, `sample-score`, `reference`, and `exclude redundant models`. Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) provides further information on the choice of values in this table.
 
-Example tsv configuration (assets/mikado_conf.tsv):
+Example tsv configuration of recommended default weights (template available in assets/mikado_conf_consensus.tsv) for "consensus" mode with helixer unmasked (hx_um) and unmasked (hx) (see also, [[Guide to Optimizing Annotation Evidence]]). 
 
 ```
-	hx	True		False	False
-	st	True	1	False	True
+	hx_um	True	1	False	False
+	st	True	10	False	True
 	tr	False	-0.5	False	False
-	mp	True	1	False	False
+	mp	True	10	False	False
+	hx	True	0	False	False
 ```
 
 > [!NOTE]
