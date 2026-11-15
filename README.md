@@ -40,6 +40,12 @@ For more information and benchmarking, see the [RAGNAROK Paper](https://acsess.o
 - [tools used in ragnarok](#tools-used-in-ragnarok)
   - [tool images](#tool-images)
 - [license](#license)
+- [guides and additional documentation](https://github.com/ryandkuster/ragnarok/wiki)
+  - [installing nextflow and apptainer](https://github.com/ryandkuster/ragnarok/wiki/Installing-Nextflow-and-Apptainer)
+  - [considerations for non‐plant annotations](https://github.com/ryandkuster/ragnarok/wiki/Considerations-for-non%E2%80%90plant-annotations)
+  - [setting up a persistent EnTAP database](https://github.com/ryandkuster/ragnarok/wiki/Setting-up-a-persistent-EnTAP-database)
+  - [configuring GPUs for helixer](https://github.com/ryandkuster/ragnarok/wiki/Configuring-GPU-for-Helixer)
+  - [tips, tutorials, and troubleshooting](https://github.com/ryandkuster/ragnarok/wiki/Tips,-Tutorials,-and-Troubleshooting)
 
 # requirements
 
