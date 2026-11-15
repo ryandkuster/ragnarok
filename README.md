@@ -85,16 +85,16 @@ Example tsv configuration of recommended default weights (template available in 
 
 ```
 	hx_um	True	1	False	False
+	hx	True	0	False	False
 	st	True	10	False	True
 	tr	False	-0.5	False	False
 	mp	True	10	False	False
-	hx	True	0	False	False
 ```
 
 > [!NOTE]
 > _The first field is intentionally missing as Ragnarok will produce these outputs._
 
-Ragnarok also allows for any number of *existing* input annotations (gff3) to be input as additional models into the mikado2 stage of processing.
+Ragnarok also allows for any number of *existing* input annotations (gff3) to be input as additional models into the mikado2 stage of processing. See https://mikado.readthedocs.io/en/stable/Tutorial/ for more information on constructing custom Mikado weighting files.
 
 Hypothetical tsv configuration including combination of Ragnarok (empty file fields) and existing models:
 
