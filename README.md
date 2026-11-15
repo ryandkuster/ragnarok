@@ -46,6 +46,7 @@ For more information and benchmarking, see the [RAGNAROK Paper](https://acsess.o
   - [setting up a persistent EnTAP database](https://github.com/ryandkuster/ragnarok/wiki/Setting-up-a-persistent-EnTAP-database)
   - [configuring GPUs for helixer](https://github.com/ryandkuster/ragnarok/wiki/Configuring-GPU-for-Helixer)
   - [tips, tutorials, and troubleshooting](https://github.com/ryandkuster/ragnarok/wiki/Tips,-Tutorials,-and-Troubleshooting)
+  - [custom evidence weighting](https://github.com/ryandkuster/ragnarok/wiki/Custom-Evidence-Weighting)
 
 # requirements
 
