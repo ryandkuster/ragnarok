@@ -86,7 +86,7 @@ git clone https://github.com/ryandkuster/ragnarok
 
 The mikado2 stage of the pipeline requires a configuration table to weigh the input gene models and give model priority. For this `--design` input, Ragnarok has the mandatory fields (`hx`, `st`, `mp`, `tr`) for the helixer, stringtie, miniprot, and transdecoder models produced along the way. Users should leave the file field blank if they are to be performed in the pipeline, but all other fields should be present. 
 
-The fields in this file are `file location`, `alias`, `strand-specific`, `sample-score`, `reference`, and `exclude redundant models`. Mikado [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) provides further information on the choice of values in this table.
+The fields in this file are `file location`, `alias`, `strand-specific`, `sample-score`, `reference`, and `exclude redundant models`. Mikado2 [documentation](https://mikado.readthedocs.io/en/stable/Tutorial/) provides further information on the choice of values in this table.
 
 Example tsv configuration of recommended default weights (template available in assets/mikado_conf_consensus.tsv) for "consensus" mode with helixer unmasked (hx_um) and unmasked (hx) (see also, [[Guide to Optimizing Annotation Evidence]]). 
 
