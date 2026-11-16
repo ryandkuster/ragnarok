@@ -22,6 +22,11 @@ process EDTA {
 
         unset -f which
 
+        mkdir -p TMP
+        mkdir -p MPL
+        TMPDIR=TMP
+        MPLCONFIGDIR=MPL
+
         EDTA.pl \
             --genome $genome \
             --cds $cds \

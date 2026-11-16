@@ -34,6 +34,24 @@ process PARSE_INPUT {
         """
 }
 
+process PARSE_GENOMES {
+    label 'pandas'
+    label 'short'
+
+    time 10.m
+    cpus 2
+    memory 10.GB
+
+    input:
+        path(genome)
+        path(genome_masked)
+
+    script:
+        """
+        parse_headers.py $genome $genome_masked
+        """
+}
+
 process PROT_FIX {
     label 'pandas'
     label 'short'

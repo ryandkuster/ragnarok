@@ -374,6 +374,7 @@ The following features are under development and work on many (but not all) syst
 |`--mask_rna`|bool|Run RNA alignment steps using the masked genome.|true|
 |`--mask_protein`|bool|Run protein alignment steps using the masked genome.|true|
 |`--mask_threshold`|int|Use with any masking tool to custom hard-mask TE annotation models >= this length (bp).|1000|
+|`--genome_masked`|.fna|Provide a pre-masked genome to skip edta/hite. Header names must match `genome` fasta.|false|
 |`--cds`|.fna|CDS file for your species, required when using `--mask_tool edta` (used by EDTA).||
 
 

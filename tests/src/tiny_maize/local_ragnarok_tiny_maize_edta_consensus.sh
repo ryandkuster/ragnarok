@@ -15,6 +15,7 @@ ill=$DATA/tiny_maize/fastq/
 
 RAG="${PWD%/*/*/*}"
 
+#/nfs/home/rkuster/bin/nextflow_26.04.4  ../../../main.nf \
 nextflow  ../../../main.nf \
     --design          $RAG/assets/mikado_conf_consensus.tsv \
     --scoring         $RAG/assets/plant_microexon_filter.yaml \
@@ -32,7 +33,7 @@ nextflow  ../../../main.nf \
     --mask_helixer    consensus \
     --mask_rna        false \
     --cds             $cds \
-    --entap_db        $DATA/db/entap_db \
+    --entap_db        $SCRATCHDIR/databases/entap_db \
     --final_prefix    cons_edta \
     -profile          local,eight \
     -resume

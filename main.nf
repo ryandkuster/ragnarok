@@ -34,6 +34,7 @@ include { HELIXER_UM                } from "./modules/helixer.nf"
 
 // intermediates
 include { PARSE_INPUT               } from './modules/parse_input.nf'
+include { PARSE_GENOMES             } from './modules/parse_input.nf'
 include { SCAF2NUM                  } from './modules/parse_input.nf'
 include { NUM2SCAF as NUM2SCAF_1    } from './modules/parse_input.nf'
 include { NUM2SCAF as NUM2SCAF_2    } from './modules/parse_input.nf'
@@ -67,6 +68,15 @@ include { ENTAP_INI                 } from './modules/entap.nf'
 include { ENTAP_RUN                 } from './modules/entap.nf'
 
 workflow {
+
+    def gitVersion = { ->
+        try {
+            def tag = ['git', 'describe', '--tags', '--always'].execute().text.trim()
+            tag ?: 'dev'
+        } catch (Exception e) {
+            'unknown'
+        }
+    }()
 
 log.info """
 ===========================================================
@@ -105,7 +115,7 @@ log.info """
 ===========================================================
 
     VERSION:
-      ${workflow.manifest.version}
+      ${gitVersion}
   
     PUBLISH DIRECTORY:
       ${params.publish_dir}
@@ -132,6 +142,11 @@ log.info """
                 params.lo_genome,
                 params.lo_gff,
                 params.mask_helixer)
+
+    if (params.genome_masked) {
+        PARSE_GENOMES(params.genome,
+                      params.genome_masked)
+    }
 
     PARSE_INPUT.out.path_ch
         .splitCsv( header: false, sep: ',' )
@@ -194,64 +209,73 @@ log.info """
     --------------------------------------------------------------------
     */
 
+    // Assign or create a masked genome if required.
     if (params.mask_helixer != false || params.mask_rna != false || params.mask_protein != false) {
-        // Create a masked genome
 
-        if (params.mask_tool == "edta") {
-            // Rename the input fastas with simple naming scheme.
-            SCAF2NUM(
-                params.genome,
-                params.cds)
+        // If user-provided pre-masked genome, skip all masking steps.
+        if (params.genome_masked) {
+            mask_genome = Channel.fromPath("${params.genome_masked}")
+        } else {
+            if (params.mask_tool == "edta") {
+                // Rename the input fastas with simple naming scheme.
+                SCAF2NUM(
+                    params.genome,
+                    params.cds)
 
-            // Perform masking of repetitive regions.
-            EDTA(
-                SCAF2NUM.out.s2n_ref_ch,
-                SCAF2NUM.out.s2n_cds_ch)
-
-            // Convert the EDTA hard-masked fasta to original naming scheme.
-            NUM2SCAF_1(
-                EDTA.out.mask_ch,
-                SCAF2NUM.out.s2n_json_ch)
-
-            // Convert the EDTA gff3 files to original naming scheme.
-            NUM2SCAF_GFF(
-                EDTA.out.edta_ch,
-                SCAF2NUM.out.s2n_json_ch)
-
-            // Optionally, allow a custom TE anno size (default 1kb) to
-            // allow more or less stringency for helixer annotations.
-            if (params.mask_threshold != false) {
-                EDTA_THRESHOLD(
-                    EDTA.out.edta_ch,
+                // Perform masking of repetitive regions.
+                EDTA(
                     SCAF2NUM.out.s2n_ref_ch,
-                    params.mask_threshold)
-                NUM2SCAF_2(
-                    EDTA_THRESHOLD.out.threshold_ch,
+                    SCAF2NUM.out.s2n_cds_ch)
+
+                // Convert the EDTA hard-masked fasta to original naming scheme.
+                NUM2SCAF_1(
+                    EDTA.out.mask_ch,
                     SCAF2NUM.out.s2n_json_ch)
-                NUM2SCAF_2.out.n2s_ref_ch.set{ mask_genome }
-            } else {
-                NUM2SCAF_1.out.n2s_ref_ch.set{ mask_genome }
-            }
 
-        } else if (params.mask_tool == "hite") {
-            HITE(params.genome)
+                // Convert the EDTA gff3 files to original naming scheme.
+                NUM2SCAF_GFF(
+                    EDTA.out.edta_ch,
+                    SCAF2NUM.out.s2n_json_ch)
 
-            if (params.mask_threshold != false) {
-                HITE_THRESHOLD(
-                    HITE.out.hite_ch,
-                    params.genome,
-                    params.mask_threshold)
-            } else {
-                HITE_THRESHOLD(
-                    HITE.out.hite_ch,
-                    params.genome,
-                    1000)
+                // Optionally, allow a custom TE anno size (default 1kb) to
+                // allow more or less stringency for helixer annotations.
+                if (params.mask_threshold != false) {
+                    EDTA_THRESHOLD(
+                        EDTA.out.edta_ch,
+                        SCAF2NUM.out.s2n_ref_ch,
+                        params.mask_threshold)
+                    NUM2SCAF_2(
+                        EDTA_THRESHOLD.out.threshold_ch,
+                        SCAF2NUM.out.s2n_json_ch)
+                    NUM2SCAF_2.out.n2s_ref_ch.set{ mask_genome }
+                } else {
+                    NUM2SCAF_1.out.n2s_ref_ch.set{ mask_genome }
+                }
+
+            } else if (params.mask_tool == "hite") {
+                HITE(params.genome)
+
+                if (params.mask_threshold != false) {
+                    HITE_THRESHOLD(
+                        HITE.out.hite_ch,
+                        params.genome,
+                        params.mask_threshold)
+                } else {
+                    HITE_THRESHOLD(
+                        HITE.out.hite_ch,
+                        params.genome,
+                        1000)
+                }
+                HITE_THRESHOLD.out.threshold_ch.set{ mask_genome }
             }
-            HITE_THRESHOLD.out.threshold_ch.set{ mask_genome }
         }
 
+        // Here we assign the non-consenus mode genomes as masked/unmasked
         if (params.mask_helixer == false) {
             hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
+        } else if (params.mask_helixer == "consensus") {
+            hx_genome = mask_genome
+            hx_um_genome = Channel.fromPath("${params.genome}")
         } else {
             hx_genome = mask_genome
         }
@@ -269,6 +293,7 @@ log.info """
         }
 
     } else {
+        // If none of the three tool paths are to be masked, we just assign.
         hx_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         st_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
         mp_genome = Channel.fromPath("${params.genome}", checkIfExists: true)
@@ -350,6 +375,7 @@ log.info """
         mp_gff = MINIPROT.out.mp_ch
     }
 
+    // Perform helixer annotations, if not already completed using skip_hx.
     if (!params.skip_hx) {
         HELIXER_DB(params.lineage)
         HELIXER(hx_genome,
@@ -358,8 +384,9 @@ log.info """
 
         hx_gff = HELIXER.out.hx_ch
 
+        // Consensus mode needs an unmasked input (defined above).
         if (params.mask_helixer == "consensus") {
-            HELIXER_UM(Channel.fromPath("${params.genome}", checkIfExists: true),
+            HELIXER_UM(hx_um_genome,
                        HELIXER_DB.out.db_ch,
                        params.subseq_len)
             hx_um_gff = HELIXER_UM.out.hx_um_ch

@@ -6,7 +6,7 @@ process FASTQC {
     cpus 6
     memory 10.GB
 
-    publishDir(path: "${params.publish_dir}/publish/qc/${outdir_name}", mode: "copy")
+    publishDir(path: { "${params.publish_dir}/publish/qc/${outdir_name}" }, mode: "copy")
 
     input:
         tuple val(sample), path(r1), path(r2)
@@ -17,6 +17,7 @@ process FASTQC {
 
     script:
         """
+        export JAVA_TOOL_OPTIONS="-Xmx6g"
         mkdir fastqc_${r1.baseName}_logs
         fastqc -o fastqc_${r1.baseName}_logs -q ${r1} ${r2}
         """
